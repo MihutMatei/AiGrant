@@ -1,0 +1,2 @@
+# Requirements for generate_presentation_formal_utf8.py
+reportlab>=3.6.0
