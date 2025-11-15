@@ -7,7 +7,7 @@ import numpy as np
 
 from .openai_client import embed_text
 
-BASE_DIR = Path(__file__).resolve().parents[2]
+BASE_DIR = Path(__file__).resolve().parents[1]
 INDICES_DIR = BASE_DIR / "indices"
 
 INDEX_EMBEDDINGS_PATH = INDICES_DIR / "opportunities_index.npy"
@@ -81,3 +81,14 @@ class OpportunityVectorStore:
             })
 
         return results
+
+if __name__ == "__main__":
+    store = OpportunityVectorStore()
+    results = store.search(
+        "grant pentru firmă de consultanță cu CAEN 7022",
+        top_k=3,
+        filter_type="grant",
+        filter_caen="7022",
+    )
+    for r in results:
+        print(f"{r['score']:.3f} | {r['type']} | {r['title']}")

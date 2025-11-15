@@ -1,0 +1,15 @@
+[
+  {
+    "id": "grant_ro_mock_1",
+    "type": "grant",
+    "title": "Grant IMM pentru Consultanță și Digitalizare",
+    "region": [
+      "Romania"
+    ],
+    "eligible_caen_codes": [
+      "7022",
+      "6201"
+    ],
+    "source_url": "https://mock.gov.ro/grant-digitalizare"
+  }
+]

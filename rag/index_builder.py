@@ -7,7 +7,7 @@ import numpy as np
 
 from .openai_client import embed_texts
 
-BASE_DIR = Path(__file__).resolve().parents[2]
+BASE_DIR = Path(__file__).resolve().parents[1]
 DATA_DIR = BASE_DIR / "data" / "opportunities"
 INDICES_DIR = BASE_DIR / "indices"
 INDICES_DIR.mkdir(parents=True, exist_ok=True)
