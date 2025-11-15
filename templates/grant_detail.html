@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ grant.title }} · GrantFinder{% endblock %}
+{% block title %}{{ grant.title }} · aiGrant{% endblock %}
 
 {% block content %}
 <div class="mb-3">
@@ -10,7 +10,7 @@
   </a>
 </div>
 
-<div class="glass-card p-4 p-md-5">
+<div class="glass-card grant-detail-card p-4 p-md-5">
   <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
     <div>
       <h1 class="h4 fw-semibold mb-1">{{ grant.title }}</h1>
@@ -77,16 +77,19 @@
       {% endif %}
 
       <div class="d-flex flex-wrap gap-2">
-        <button class="btn btn-primary btn-sm" type="button" disabled>
-          <i class="bi bi-magic me-1"></i>
-          Generate document checklist
-        </button>
-        <button class="btn btn-outline-light btn-sm" type="button" disabled>
-          Open application form
-        </button>
+        <a href="{{ url_for('grant_documents', grant_id=grant.id) }}"
+            class="btn btn-primary btn-sm d-flex align-items-center gap-1">
+            <i class="bi bi-magic"></i>
+            <span>Generate application documents</span>
+        </a>
+        <a href="#"
+            class="btn btn-outline-light btn-sm d-flex align-items-center gap-1">
+            <i class="bi bi-box-arrow-up-right"></i>
+            <span>Open application form</span>
+        </a>
       </div>
       <p class="text-muted-soft small mt-2 mb-0">
-        In a full version, these buttons would lead to AI-generated drafts
+        These buttons take you to AI-generated drafts
         and the official application portal.
       </p>
     </div>
