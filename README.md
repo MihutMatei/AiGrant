@@ -1,2 +1,2 @@
 # AiGrant
-Codul echipei MEMDIV pentru competitia INOVATE4AI
+Codul echipei MEMDIV pentru competitia Innovate4AI
