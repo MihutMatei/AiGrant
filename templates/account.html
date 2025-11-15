@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 
-{% block title %}Account · GrantFinder{% endblock %}
+{% block title %}Account · aiGrant{% endblock %}
 
 {% block content %}
-<div class="glass-card p-4 p-md-5">
+<div class="glass-card">
   <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
     <div>
       <h2 class="h4 fw-semibold mb-1">Company profile</h2>
@@ -33,9 +33,6 @@
         value="{{ user.name }}"
         disabled
       >
-      <div class="form-text text-muted-soft small">
-        Hard-coded for now — in a real app this would be editable.
-      </div>
     </div>
 
     <div class="col-md-6">
@@ -48,7 +45,8 @@
       >
     </div>
 
-    <div class="col-md-6">
+    <!-- CUI / Numar angajati / Varsta dezvoltator -->
+    <div class="col-md-4">
       <label for="cui" class="form-label small text-uppercase text-muted-soft">CUI</label>
       <input
         type="text"
@@ -60,7 +58,7 @@
       >
     </div>
 
-    <div class="col-md-6">
+    <div class="col-md-4">
       <label for="numar_angajati" class="form-label small text-uppercase text-muted-soft">
         Number of employees
       </label>
@@ -75,27 +73,127 @@
       >
     </div>
 
-    <div class="col-12 d-flex justify-content-between align-items-center pt-2">
-      <div class="text-muted-soft small">
-        Changes are applied only in memory while the server is running.
+    <div class="col-md-4">
+      <label for="varsta_dezvoltator" class="form-label small text-uppercase text-muted-soft">
+        Founder age
+      </label>
+      <input
+        type="number"
+        id="varsta_dezvoltator"
+        name="varsta_dezvoltator"
+        class="form-control bg-dark text-light border-secondary"
+        value="{{ user.varsta_dezvoltator }}"
+        min="0"
+      >
+    </div>
+
+    <!-- un pic mai mult spațiu înainte de Additional details -->
+    <div class="col-12 mt-4">
+      <h3 class="h6 text-uppercase text-muted-soft mb-2">Additional details</h3>
+      <p class="text-muted-soft small mb-0">
+        Optional context about your startup, product, team or traction that can be used later
+        when generating tailored application documents.
+      </p>
+    </div>
+
+    <div class="col-md-6">
+      <label for="additional_info_1" class="form-label small text-uppercase text-muted-soft">
+        Additional info 1
+      </label>
+      <input
+        type="text"
+        id="additional_info_1"
+        name="additional_info_1"
+        class="form-control bg-dark text-light border-secondary"
+        value="{{ user.additional_info_1 if user.additional_info_1 is defined else '' }}"
+      >
+    </div>
+
+    <div class="col-md-6">
+      <label for="additional_info_2" class="form-label small text-uppercase text-muted-soft">
+        Additional info 2
+      </label>
+      <input
+        type="text"
+        id="additional_info_2"
+        name="additional_info_2"
+        class="form-control bg-dark text-light border-secondary"
+        value="{{ user.additional_info_2 if user.additional_info_2 is defined else '' }}"
+      >
+    </div>
+
+    <div class="col-md-6">
+      <label for="additional_info_3" class="form-label small text-uppercase text-muted-soft">
+        Additional info 3
+      </label>
+      <input
+        type="text"
+        id="additional_info_3"
+        name="additional_info_3"
+        class="form-control bg-dark text-light border-secondary"
+        value="{{ user.additional_info_3 if user.additional_info_3 is defined else '' }}"
+      >
+    </div>
+
+    <div class="col-md-6">
+      <label for="additional_info_4" class="form-label small text-uppercase text-muted-soft">
+        Additional info 4
+      </label>
+      <input
+        type="text"
+        id="additional_info_4"
+        name="additional_info_4"
+        class="form-control bg-dark text-light border-secondary"
+        value="{{ user.additional_info_4 if user.additional_info_4 is defined else '' }}"
+      >
+    </div>
+
+    <div class="col-md-6">
+      <label for="additional_info_5" class="form-label small text-uppercase text-muted-soft">
+        Additional info 5
+      </label>
+      <input
+        type="text"
+        id="additional_info_5"
+        name="additional_info_5"
+        class="form-control bg-dark text-light border-secondary"
+        value="{{ user.additional_info_5 if user.additional_info_5 is defined else '' }}"
+      >
+    </div>
+
+    <div class="col-md-6">
+      <label for="additional_info_6" class="form-label small text-uppercase text-muted-soft">
+        Additional info 6
+      </label>
+      <input
+        type="text"
+        id="additional_info_6"
+        name="additional_info_6"
+        class="form-control bg-dark text-light border-secondary"
+        value="{{ user.additional_info_6 if user.additional_info_6 is defined else '' }}"
+      >
+    </div>
+
+    <!-- linia cu Save / text / Find grants pe aceeași linie -->
+    <div class="col-12 mt-3">
+      <hr class="border-secondary mb-3">
+      <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+        <!-- stânga: Save changes -->
+        <button type="submit" name="action" value="save" class="btn btn-primary">
+          <i class="bi bi-save me-1"></i>
+          Save changes
+        </button>
+
+        <div class="text-muted-soft small flex-grow-1 text-center">
+          After updating your profile, discover which grants might fit your startup.
+        </div>
+
+        <button type="submit" name="action" value="find_grants" class="btn btn-outline-light">
+          <i class="bi bi-compass me-1"></i>
+          Find grants
+        </button>
       </div>
-      <button type="submit" class="btn btn-primary">
-        <i class="bi bi-save me-1"></i>
-        Save changes
-      </button>
     </div>
   </form>
-
-  <hr class="border-secondary my-4">
-
-  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
-    <div class="text-muted-soft small">
-      Once your profile is set, head to the grants section to see what you might be eligible for.
-    </div>
-    <a href="{{ url_for('grants') }}" class="btn btn-outline-light btn-sm">
-      <i class="bi bi-compass me-1"></i>
-      View grants
-    </a>
-  </div>
 </div>
 {% endblock %}

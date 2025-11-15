@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Welcome · GrantFinder{% endblock %}
+{% block title %}Welcome · aiGrant{% endblock %}
 
 {% block content %}
 <div class="row g-4 align-items-center">
@@ -18,9 +18,10 @@
     </h1>
 
     <p class="text-muted-soft mb-4" style="max-width: 520px;">
-      This prototype shows how your company profile connects to available grants
-      and what documents you’ll need to apply. Log in as a demo company and explore
-      the funding map.
+      aiGrant helps you keep your startup profile in one place and map it
+      against grants, accelerators and VCs that actually fit. This environment
+      shows only a demo interface - real opportunities are available
+      exclusively for paying customers.
     </p>
 
     <div class="d-flex flex-wrap gap-3 align-items-center">
@@ -32,29 +33,35 @@
       {% else %}
         <a href="{{ url_for('grants') }}" class="btn btn-primary btn-lg d-flex align-items-center gap-2">
           <i class="bi bi-compass"></i>
-          <span>Explore grants</span>
+          <span>Find grants</span>
         </a>
       {% endif %}
 
       <div class="d-flex flex-column">
         <span class="text-muted-soft small">
-          No real data, just a clean prototype.
+          Paid B2B service - this space uses only demo data, no live deals.
         </span>
       </div>
     </div>
 
     <div class="mt-4 d-flex flex-wrap gap-4">
       <div>
-        <div class="fw-semibold">3</div>
-        <div class="text-muted-soft small">Sample grants</div>
+        <div class="fw-semibold">Paid access</div>
+        <div class="text-muted-soft small">
+          Full funding database available only on subscription.
+        </div>
       </div>
       <div>
-        <div class="fw-semibold">Instant</div>
-        <div class="text-muted-soft small">eligibility preview</div>
+        <div class="fw-semibold">No free tier</div>
+        <div class="text-muted-soft small">
+          We don't expose live grant data publicly or as a free sample.
+        </div>
       </div>
       <div>
-        <div class="fw-semibold">Docs</div>
-        <div class="text-muted-soft small">checklist per grant</div>
+        <div class="fw-semibold">Demo workspace</div>
+        <div class="text-muted-soft small">
+          Use this UI to explore the product flow with mock data only.
+        </div>
       </div>
     </div>
   </div>
@@ -69,27 +76,31 @@
         Demo company snapshot
       </h5>
       <p class="text-muted-soft small mb-4">
-        The app uses a mock profile so you can safely test everything.
+        This demo profile is here so you can click through the flow without
+        touching any real company data.
       </p>
 
-      <ul class="list-unstyled mb-4">
-        <li class="d-flex justify-content-between mb-2">
-          <span class="text-muted-soft">Company name</span>
-          <span>Demo User SRL</span>
-        </li>
-        <li class="d-flex justify-content-between mb-2">
-          <span class="text-muted-soft">CUI</span>
-          <span>12345678</span>
-        </li>
-        <li class="d-flex justify-content-between mb-2">
-          <span class="text-muted-soft">Employees</span>
-          <span>50</span>
-        </li>
-      </ul>
+      {% if user %}
+        <ul class="list-unstyled mb-4">
+          <li class="d-flex justify-content-between mb-2">
+            <span class="text-muted-soft">Company name</span>
+            <span>{{ user.name }}</span>
+          </li>
+          <li class="d-flex justify-content-between mb-2">
+            <span class="text-muted-soft">CUI</span>
+            <span>{{ user.cui or "—" }}</span>
+          </li>
+        </ul>
+      {% else %}
+        <p class="text-muted-soft small mb-4">
+          Log in to load your company profile here. No real company data is shown in this demo.
+        </p>
+      {% endif %}
 
-      <div class="border-top border-secondary pt-3 d-flex justify-content-between align-items-center">
+
+      <div class="border-top border-secondary pt-3 d-flex justify-content-between align-items-center gap-3">
         <span class="text-muted-soft small">
-          Update these details later from the Account page.
+          Production access includes real-time feeds of active calls &amp; programs.
         </span>
         {% if session.get('user') %}
           <a href="{{ url_for('account') }}" class="btn btn-outline-light btn-sm">
