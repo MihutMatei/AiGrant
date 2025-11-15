@@ -130,7 +130,7 @@ def generate_docs_package(cif: str, opportunity_id: str) -> Dict[str, Any]:
     user_prompt = build_docs_prompt(firm, opp)
 
     resp = client.chat.completions.create(
-        model="gpt-5-nano",  # you can change this to another model if you want
+        model="gpt-4.1-mini",  # you can change this to another model if you want
         messages=[
             {
                 "role": "system",
