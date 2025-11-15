@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Funding Grants - My Flask App{% endblock %}
+
+{% block content %}
+<h2 class="mb-4 text-center">Funding Grants</h2>
+
+<div class="row">
+    {% for grant in grants %}
+    <div class="col-md-6 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">{{ grant.title }}</h5>
+                <p class="card-text">
+                    <strong>Eligibility:</strong>
+                    {% if grant.eligibility %}
+                        <span class="text-success">Eligible</span>
+                    {% else %}
+                        <span class="text-danger">Ineligible</span>
+                    {% endif %}
+                </p>
+
+                {% if not grant.eligibility %}
+                <p class="card-text">
+                    <strong>Unmet Requirements:</strong>
+                    <ul>
+                        {% for req in grant.unmet_requirements %}
+                        <li>{{ req }}</li>
+                        {% endfor %}
+                    </ul>
+                </p>
+                {% endif %}
+
+                <p class="card-text"><strong>Grant Sum:</strong> €{{ grant.sum_eur }}</p>
+            </div>
+            <div class="card-footer text-end">
+                <a href="{{ url_for('grant_detail', grant_id=grant.id) }}" class="btn btn-primary">See More</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
