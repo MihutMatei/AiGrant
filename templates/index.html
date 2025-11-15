@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}
+Home - My Flask App
+{% endblock %}
+
+{% block content %}
+<div class="text-center">
+
+    <h1 class="mb-4">Welcome to My Flask App</h1>
+
+    <p class="lead">
+        This is the index page. Use the navigation bar to log in or view your account.
+    </p>
+
+    <div class="mt-4">
+        <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg">Login</a>
+    </div>
+
+</div>
+{% endblock %}
