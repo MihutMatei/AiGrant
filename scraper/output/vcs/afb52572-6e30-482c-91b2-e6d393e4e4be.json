@@ -1,0 +1,68 @@
+{
+  "id": "romania_investment_partners_accelerator_2024_venture_capital",
+  "type": "accelerator",
+  "title": "Romania Investment Partners - Program Financiar Venture Capital 2024",
+  "source_url": "https://access2capital.co",
+  "region": [
+    "Romania"
+  ],
+  "eligible_countries": [
+    "Romania"
+  ],
+  "eligible_caen_codes": [],
+  "raw_text": "Programul de Finantare Venture Capital reprezinta o modalitate flexibila si adaptabila de Finantare si Investitii pe Termen Mediu si Lung pentru companiile eligibile. Capitalizarile derulate prin intermediul sau vizeaza exclusiv furnizarea de capitaluri pentru companii publice/private aflate in diverse stadii de dezvoltare si care detin anumite caracteristici operationale. Sunt acceptate în Program companii cu istoric de functionare, cu diverse coduri CAEN si obiecte de activitate legale. Aplicarea se face 100% online prin intermediul platformei B2B CloudFunding (access2capital.co). Programul acopera finantari in toate rundele de venture capital pentru start-up-uri, cresteri, dezvoltare si achizitii. Condițiile de eligibilitate includ criterii financiare minime (venituri, EBITDA, active bilantiere), dar nu sunt excluse coduri CAEN sau obiecte de activitate pentru finantare. Procesul de aplicare include crearea contului online, transmiterea sintezei afacerii, evaluare, transmiterea documentelor relevante, oferta de capitalizare și contractare.",
+  "summary": "Romania Investment Partners oferă un program de accelerator/venture capital flexibil pentru companii românești în diverse etape de dezvoltare, cu criterii financiare clare, focalizat pe finanțări equity și debt. Aplicarea se realizează complet online prin platforma dedicată. Nu există restricții pe CAEN-uri sau domenii, fiind eligibile societăți comerciale SRL sau SA cu capital privat integral.",
+  "eligibility_criteria": [
+    "Societăți comerciale SRL sau SA înființate în România cu capital privat integral",
+    "Venituri din exploatare minime de 2M euro în ultimii 2-3 ani",
+    "EBITDA minim 0.5M euro în ultimii 2-3 ani",
+    "Active bilantiere (imobilizate + circulante) minime 3M euro în ultimii 2-3 ani",
+    "Companiile pot fi în diverse faze: start-up, creștere, expansiune, internaționalizare",
+    "Nu există excluderi pe coduri CAEN sau domenii de activitate",
+    "Pot aplica companii aflate în dificultate, cu condiția implementării programului de restructurare",
+    "Aplicarea se face prin platformă online CloudFunding"
+  ],
+  "required_documents": [
+    "Sinteza afacerii (plan de afaceri simplificat)",
+    "Setul de documente specifice pentru fiecare propunere, comunicate în aplicație după calificare"
+  ],
+  "required_documents_full": [
+    {
+      "id": "sinteza_afacerii",
+      "name": "Sinteza Afacerii",
+      "description": "Fişa de 1 pagină care conţine o prezentare simplă şi concisă a companiei/afacerii propuse spre capitalizare",
+      "ai_can_generate": true,
+      "official_template_url": null,
+      "format": [
+        "pdf",
+        "doc",
+        "txt"
+      ]
+    },
+    {
+      "id": "set_documente_specific",
+      "name": "Set Documente Specifice",
+      "description": "Documentaţia necesară pentru evaluarea cererii, comunicată online după etapa de evaluare inițială",
+      "ai_can_generate": false,
+      "official_template_url": null,
+      "format": [
+        "pdf",
+        "doc",
+        "xls"
+      ]
+    }
+  ],
+  "application_format": "online_form",
+  "application_language": "ro",
+  "team_information_required": true,
+  "financials_required": true,
+  "traction_required": true,
+  "budget_template_required": false,
+  "deadlines": [
+    {
+      "label": "Perioada de aplicare 2024",
+      "date": "2024-12-31"
+    }
+  ],
+  "additional_notes": "Programul este flexibil și non-plafonat pe bugete, cu acces continuu pe tot parcursul anului 2024. Nu există restricţii pe coduri CAEN, acestea fiind acceptate pe toate activităţile legale. Consultanța pentru documentație este disponibilă opțional prin parteneri locali, dar nu este obligatorie."
+}

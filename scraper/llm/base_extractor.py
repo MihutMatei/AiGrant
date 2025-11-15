@@ -15,13 +15,22 @@ class BaseExtractor:
 
         with open(prompt_path, "r") as f:
             self.prompt_template = f.read()
+        
+        project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+        caen_file = os.path.join(project_root, "config", "caen.txt")
+        self.caen_reference = ""
+        if os.path.exists(caen_file):
+            with open(caen_file, "r", encoding="utf-8") as f:
+                self.caen_reference = f.read()
 
     def extract(self, text):
-        prompt = self.prompt_template.replace("{{schema}}", self.schema_json)
+        prompt = self.prompt_template
+        prompt = prompt.replace("{{schema}}", self.schema_json)
+        prompt = prompt.replace("{{caen_reference}}", self.caen_reference)
         prompt = prompt + "\n\n" + text
 
         response = self.client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-4.1-mini",
             messages=[{"role": "user", "content": prompt}],
             response_format={"type": "json_object"}
         )

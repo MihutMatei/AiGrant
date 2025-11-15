@@ -1,8 +1,8 @@
 [
     
     {
-        "name" : "bcr",
-        "domain" : "bcr.ro",
-        "start_url" : "https://www.bcr.ro/content/dam/ro/bcr/www_bcr_ro/Business/BCR-InnovX/Formular_Accelerator_BCR-InnovX.pdf"
+        "name" : "eic",
+        "domain" : "",
+        "start_url" : "https://eic.ec.europa.eu/eic-funding-opportunities/eic-accelerator_en#how-to-apply-for-the-eic-accelerator"
     }
 ]

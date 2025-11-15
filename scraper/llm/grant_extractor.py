@@ -4,30 +4,57 @@ import json
 GRANT_SCHEMA = json.dumps({
   "id": "string",
   "type": "grant",
+
   "title": "string",
+  "program_name": "string | null",
   "source_url": "string",
+
   "region": ["string"],
   "eligible_countries": ["string"],
   "eligible_caen_codes": ["string"],
-  "funding_min": 0,
-  "funding_max": 0,
+
+  "funding_min": "number",
+  "funding_max": "number",
   "funding_currency": "string",
-  "non_dilutive": True,
-  "cofinancing_required": True,
-  "cofinancing_min_ratio": 0.0,
-  "raw_text": "string",
+
+  "non_dilutive": "boolean",
+  "cofinancing_required": "boolean",
+  "cofinancing_min_ratio": "number | null",
+
   "summary": "string",
+  "raw_text": "string",
+
   "eligibility_criteria": ["string"],
   "required_documents": ["string"],
-  "required_documents_full": [],
-  "application_format": "string",
-  "application_language": "string",
-  "team_information_required": False,
-  "financials_required": False,
-  "traction_required": False,
-  "budget_template_required": False,
-  "deadlines": [],
-  "additional_notes": "string"
+
+  "required_documents_full": [
+    {
+      "id": "string",
+      "name": "string",
+      "description": "string",
+      "ai_can_generate": "boolean",
+      "official_template_url": "string | null",
+      "format": ["string"]
+    }
+  ],
+
+  "application_format": "online_portal | portal | pdf_upload | email",
+  "application_portal_name": "string | null",
+  "application_language": "ro | en",
+
+  "team_information_required": "boolean",
+  "financials_required": "boolean",
+  "traction_required": "boolean",
+  "budget_template_required": "boolean",
+
+  "deadlines": [
+    {
+      "label": "string",
+      "date": "string"
+    }
+  ],
+
+  "additional_notes": "string | null"
 })
 
 class GrantExtractor(BaseExtractor):
