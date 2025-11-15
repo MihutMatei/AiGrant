@@ -88,69 +88,21 @@ def build_docs_prompt(firm: Dict[str, Any], opp: Dict[str, Any]) -> str:
     required_docs_str = "\n".join(docs_lines)
 
     return f"""
+# Rol si obiectiv
+
 Ești un asistent specializat în documentație pentru granturi, VC și acceleratoare pentru IMM-uri din România.
 
+# Instructiuni
+
 Ți se dau informații despre o firmă și o oportunitate (grant/VC/accelerator).
-Trebuie să generezi un răspuns STRICT în format JSON, cu următoarea structură:
-
-{{
-  "summary": string,
-  "ai_docs": [
-    {{
-      "name": string,
-      "type": string,  // ex: "business_plan", "cofinancing_declaration", "other"
-      "draft": string  // text lung, structurat pe secțiuni
-    }}
-  ],
-  "institutional_docs": [
-    {{
-      "name": string,
-      "recommended_source": string,  // ex: "ONRC", "ANAF/contabil", "Bancă", "Alte autorități"
-      "note": string  // explicație scurtă
-    }}
-  ],
-  "questions_for_user": [
-    string  // întrebări concrete pentru utilizator, pentru a completa documentele
-  ],
-  "to_improve": [
-    string  // ce informații lipsesc sau ar trebui rafinate în documente
-  ],
-  "extra_notes": string
-}}
-
 Generează documente conform instrucțiunilor de mai jos.
 
 Reguli:
-- Pentru fiecare document, vei scrie între 1 și 3 pagini de text coerent, profesionist și complet.
-- Folosește markdown simplu sau text simplu, fără formatare specială.
+- Pentru fiecare document, vei scrie între 1 și 3 pagini (aproximativ 600-1800 cuvinte) de text coerent, profesionist și complet.
 - Nu scrie meta-explicații, nu comenta, nu adăuga text exterior cerințelor.
 - Tot conținutul trebuie să fie parsabil, fără bullet point-uri goale sau fraze neterminate.
 - Dacă lipsesc informații, folosește placeholderul [DE COMPLETAT].
 - Respectă delimitările EXACT cum sunt definite.
-
-Format cerut:
-
-începe document
-[Titlul documentului 1]
-[1–3 pagini de conținut coerent, profesionist și complet, aproximativ 600–1800 cuvinte]
-se termina documentul
-
-începe document
-[Titlul documentului 2]
-[1–3 pagini de conținut coerent, profesionist și complet]
-se termina documentul
-
-începe document
-[Titlul documentului 3]
-[1–3 pagini de conținut coerent]
-se termina documentul
-
-Nu scrie nimic altceva în afară de aceste documente.
-
-Documentele de generat sunt:
-[LISTA DOCUMENTELOR — completată de backend, de exemplu: “Plan de Afaceri”, “Dovada Cofinanțării”, “Scrisoare de Intenție”, etc.]
-
-Reguli importante:
 - Folosește DOAR informațiile primite; dacă lipsesc date (ex: suma exactă a proiectului, durata), folosește placeholdere clare de tipul "[DE COMPLETAT]" în draft.
 - Pentru fiecare document unde "ai_can_generate" = true, creează un element în "ai_docs" cu draft detaliat.
   - Pentru "Plan de Afaceri": include secțiuni standard: Rezumat executiv, Descrierea companiei, Analiza pieței, Produse/Servicii, Strategie și implementare, Management și echipă, Plan financiar, Riscuri.
@@ -160,19 +112,57 @@ Reguli importante:
   - Dacă conține "situații financiare", "bilanț", "ANAF" → recommended_source = "ANAF/contabil".
   - Dacă conține "extras de cont", "cont bancar" → recommended_source = "Bancă".
   - Altfel → "Alte autorități".
-- În "questions_for_user" pune întrebările esențiale pentru a completa placeholder-ele.
-- În "to_improve" enumeră clar ce informații lipsesc (ex: sumă proiect, perioada de implementare, număr angajați relevanți, descriere produs/serviciu, parteneri).
-- Toate textele (summary, draft-uri, note, întrebări) trebuie să fie în limba română.
-- Cheile JSON trebuie să fie EXACT cele specificate mai sus.
+- Toate textele (titluri, draft-uri) trebuie să fie în limba română.
+- Cheile JSON trebuie să fie EXACT cele specificate mai jos.
 - Răspunsul trebuie să fie DOAR JSON valid, fără alt text.
+- Foloseste un limbaj cat mai adecvat din punct de vedere legal.
 
-=== Date despre firmă ===
+# Formatul cerut
+
+Trebuie să generezi un răspuns STRICT în format JSON, cu următoarea structură:
+
+{{
+  "ai_docs": [
+    {{
+      "name": string,
+      "type": string,  // ex: "business_plan", "cofinancing_declaration", "other"
+      "draft": // continutul propriu-zis al documentului, impartit pe sectiuni
+      [
+        {{
+            "title": string, // titlul primei sectiuni (ex. "Rezumat executiv", "Descrierea afacerii", "Strategia de marketing", "Plan operational")
+            "body": string // corpul sectiunii
+        }},
+        {{
+            "title": string, // titlul celei de-a doua sectiuni
+            "body": string // corpul sectiunii
+        }},
+        ... // atatea sectiuni cat sunt necesare conform cerintelor de finantare si descrierii companiei
+      ]
+    }}
+  ],
+  "institutional_docs": [
+    {{
+      "name": string,
+      "recommended_source": string,  // ex: "ONRC", "ANAF/contabil", "Bancă", "Alte autorități"
+      "note": string  // explicație scurtă
+    }}
+  ]
+}}
+
+# Documentele generate
+
+Documentele de generat sunt: "Plan de Afaceri", "Dovada Cofinantarii", "Scrisoare de Intentie".
+Nu scrie nimic altceva decat aceste documente.
+
+# Date despre firma
+
 Nume: {firm_name}
 Cod CAEN: {caen_code} ({caen_descriere})
 Cifră de afaceri netă {year}: {cifra_afaceri}
 Profit net {year}: {profit_net}
 
-=== Oportunitate ===
+# Date despre oportunitatea de finantare
+
 Tip: {opp_type}
 Titlu: {opp_title}
 
@@ -186,6 +176,12 @@ Text oficial / descriere completă:
 \"\"\"
 {raw_text}
 \"\"\"
+
+# Reguli importante
+ - Pentru fiecare document scrie cel putin 600 cuvinte.
+ - Respecta EXACT formatul mentionat mai sus.
+ - Nu genera altceva decat ce este specificat mai sus.
+- Foloseste un limbaj cat mai adecvat din punct de vedere legal.
     """.strip()
 
 
