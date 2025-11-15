@@ -1,0 +1,40 @@
+{
+  "id": "bcr_innovx",
+  "type": "accelerator",
+  "name": "BCR-InnovX Accelerator",
+  "cohort_name": "",
+  "source_url": "",
+  "region": [
+    "Romania"
+  ],
+  "eligible_countries": [
+    "Romania"
+  ],
+  "eligible_caen_codes": [],
+  "equity_taken": false,
+  "equity_percentage": 0.0,
+  "cash_stipend": 0,
+  "currency": "RON",
+  "program_duration_months": 0,
+  "program_location": "Romania",
+  "program_format": "In-person",
+  "summary": "The BCR-InnovX Accelerator supports startups with scaling ambitions at European and global levels, emphasizing a transparent application process and public exposure of the applications.",
+  "raw_text": "BCR-InnovX Accelerator is an international accelerator focusing on companies with global scaling ambitions. The program requires applications to be submitted in English and emphasizes transparency in the evaluation process.",
+  "eligibility_criteria": [
+    "Must be a company with scaling ambitions",
+    "Project descriptions must be in English"
+  ],
+  "required_documents": [
+    "Project description",
+    "Recommendations from partners or clients"
+  ],
+  "required_documents_full": [],
+  "application_format": "Email submission",
+  "application_language": "English",
+  "team_information_required": true,
+  "financials_required": false,
+  "traction_required": false,
+  "budget_template_required": false,
+  "deadlines": [],
+  "additional_notes": "All files attached must not exceed 8MB, and any non-English applications will be disqualified."
+}
