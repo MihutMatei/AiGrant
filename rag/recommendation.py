@@ -1,15 +1,20 @@
-# rag/recommendation.py
+# rag/recommendation.py (LLM-based ranking version)
 from __future__ import annotations
 
 import json
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+from dotenv import load_dotenv
 
-from .vector_store import OpportunityVectorStore
+from openai import OpenAI
 
 BASE_DIR = Path(__file__).resolve().parents[1]
 FIRMS_DIR = BASE_DIR / "data" / "firms"
 OPP_DIR = BASE_DIR / "data" / "opportunities"
+
+load_dotenv()
+
+client = OpenAI()
 
 
 def load_firm_by_cif(cif: str) -> Dict[str, Any]:
@@ -21,9 +26,6 @@ def load_firm_by_cif(cif: str) -> Dict[str, Any]:
 
 
 def load_all_opportunities() -> Dict[str, Dict[str, Any]]:
-    """
-    Returnează un dict {id: opportunity_dict} cu toate granturile/VC/acceleratoarele.
-    """
     by_id: Dict[str, Dict[str, Any]] = {}
     for fname in ["sources.json"]:
         path = OPP_DIR / fname
@@ -41,124 +43,105 @@ def load_all_opportunities() -> Dict[str, Dict[str, Any]]:
     return by_id
 
 
-def build_firm_query(firm: Dict[str, Any]) -> str:
+def llm_match_score(firm: Dict[str, Any], opp: Dict[str, Any]) -> float:
     """
-    Construiește un query text din info despre firmă pentru semantic search.
+    Returns an LLM-evaluated compatibility score (0-1).
     """
-    return json.dumps(firm, ensure_ascii=False)
+    prompt = f"""
+You are an expert evaluator.
+Assign a semantic match score between a startup and a funding opportunity.
+Score range: 0.0 = unrelated, 1.0 = perfect match.
+Keep in mind that this score is used for deciding if the firm is eligible.
+DO NOT give high scores for ineligible firms. If a firm is ineligible it should have a score lower than 0.5, and higher otherwise.
+Respond ONLY with a JSON object: {{"score": float}}
+
+Startup:
+{json.dumps(firm, ensure_ascii=False, indent=2)}
+
+Opportunity:
+{json.dumps(opp, ensure_ascii=False, indent=2)}
+"""
+    resp = client.responses.create(
+        model="gpt-4.1-mini",
+        input=prompt,
+        max_output_tokens=100,
+    )
+    text = resp.output_text
+    try:
+        data = json.loads(text)
+        return float(data.get("score", 0.0))
+    except Exception:
+        return 0.0
 
 
-def explain_match(
-    firm: Dict[str, Any],
-    opp: Dict[str, Any],
-    semantic_score: float,
+def explain_match_llm(
+    firm: Dict[str, Any], opp: Dict[str, Any], score: float
 ) -> List[str]:
-    """
-    Generează explicații simple, rule-based, pentru de ce oportunitatea pare potrivită.
-    Nu folosim LLM aici, doar logică simplă.
-    """
-    reasons: List[str] = []
+    prompt = f"""
+Explain why the following startup might match the funding opportunity.
+Respond with a bullet point list.
 
-    firm_caen = str(firm.get("caen_code") or "")
-    eligible_caen = opp.get("eligible_caen_codes", []) or []
-    if firm_caen and firm_caen in eligible_caen:
-        reasons.append(f"Codul CAEN {firm_caen} al firmei este în lista de CAEN eligibile.")
-    elif eligible_caen:
-        reasons.append(
-            f"Codul CAEN {firm_caen} nu apare explicit în lista eligibilă {eligible_caen}, "
-            "dar există asemănare semantică (scor de similaritate bun)."
-        )
+Startup:
+{json.dumps(firm, indent=2, ensure_ascii=False)}
 
-    eligible_countries = opp.get("eligible_countries", []) or []
-    if not eligible_countries or "Romania" in eligible_countries:
-        reasons.append("Oportunitatea este deschisă companiilor din România.")
-    else:
-        reasons.append(
-            f"Oportunitatea pare orientată spre {eligible_countries}; verifică eligibilitatea pentru România."
-        )
+Opportunity:
+{json.dumps(opp, indent=2, ensure_ascii=False)}
 
-    opp_type = opp.get("type")
-    if opp_type == "grant":
-        reasons.append("Este un grant (finanțare nerambursabilă).")
-    elif opp_type == "vc":
-        reasons.append("Este un fond de investiții (VC).")
-    elif opp_type == "accelerator":
-        reasons.append("Este un program de accelerare.")
-
-    if opp.get("non_dilutive") is True:
-        reasons.append("Finanțarea este nedilutivă (nu presupune cedare de equity).")
-
-    cifra = firm.get("cifra_de_afaceri_neta")
-    if cifra:
-        reasons.append(
-            "Firma are deja cifră de afaceri, ceea ce ajută la demonstrarea capacității financiare."
-        )
-
-    reasons.append(f"Scor de similaritate semantică (RAG): {semantic_score:.3f}.")
-
-    return reasons
+Match score: {score}
+"""
+    resp = client.responses.create(
+        model="gpt-4.1-nano",
+        input=prompt,
+        max_output_tokens=200,
+    )
+    text = resp.output_text
+    return [line.strip("- ") for line in text.split("\n") if line.strip()]
 
 
 def recommend_opportunities_for_firm(
     cif: str,
     top_k: int = 5,
-    opp_type: Optional[str] = None,  # "grant" | "vc" | "accelerator" | None
+    opp_type: Optional[str] = None,
 ) -> List[Dict[str, Any]]:
-    """
-    Returnează top_k cele mai potrivite oportunități pentru firma cu CIF dat,
-    folosind informația din firmă + indexul vectorial.
-    """
     firm = load_firm_by_cif(cif)
     all_opps = load_all_opportunities()
-    store = OpportunityVectorStore()
 
-    firm_query = build_firm_query(firm)
-    firm_caen = str(firm.get("caen_code") or "")
+    # Optionally filter by type
+    if opp_type:
+        opportunities = [op for op in all_opps.values() if op.get("type") == opp_type]
+    else:
+        opportunities = list(all_opps.values())
 
-    # Căutare semantică filtrată pe CAEN (dacă îl avem)
-    results_meta = store.search(
-        query=firm_query,
-        top_k=top_k * 3,  # luăm mai multe, apoi reordonăm
-        filter_type=opp_type,
-        filter_caen=firm_caen or None,
-    )
+    scored: List[Dict[str, Any]] = []
 
-    recommendations: List[Dict[str, Any]] = []
-    for meta in results_meta:
-        op_id = meta["id"]
-        opp = all_opps.get(op_id)
-        if not opp:
-            continue
-
-        semantic_score = meta.get("score", 0.0)
-        reasons = explain_match(firm, opp, semantic_score)
-
-        recommendations.append(
+    for opp in opportunities:
+        score = llm_match_score(firm, opp)
+        reasons = explain_match_llm(firm, opp, score)
+        scored.append(
             {
-                "id": op_id,
+                "id": opp.get("id"),
                 "type": opp.get("type"),
                 "title": opp.get("title") or opp.get("name"),
-                "semantic_score": semantic_score,
-                "eligibility": meta.get("eligible"),
-                "deadlines": meta.get("deadlines"),
-                "funding": meta.get("funding"),
-                "eligibility_criteria": meta.get("eligibility_criteria"),
-                "number_of_docs": meta.get("number_of_docs"),
-                "match_reasons": reasons,
+                "semantic_score": score,
+                "eligible": score >= 0.5,
+                "region": opp.get("region", []),
+                "eligible_caen_codes": opp.get("eligible_caen_codes", []),
+                "deadlines": opp.get("deadlines", []),
+                "eligibility_criteria": opp.get("eligibility_criteria", []),
+                "number_of_docs": len(opp.get("required_documents", [])),
                 "source_url": opp.get("source_url"),
+                "funding": opp.get("funding_max", "unspecified"),
+                "match_reasons": reasons,
             }
         )
 
-    # Sortăm după scor semantic descrescător
-    recommendations.sort(key=lambda x: x["semantic_score"], reverse=True)
-
-    return recommendations[:top_k]
+    scored.sort(key=lambda x: x["semantic_score"], reverse=True)
+    return scored[:top_k]
 
 
 if __name__ == "__main__":
-    # Test simplu pentru firma ta mock
     example_cif = "33945221"
-    recs = recommend_opportunities_for_firm(example_cif, top_k=5, opp_type=None)
+    recs = recommend_opportunities_for_firm(example_cif, top_k=5)
     for r in recs:
         print(f"{r['semantic_score']:.3f} | {r['type']} | {r['title']}")
         for reason in r["match_reasons"]:
