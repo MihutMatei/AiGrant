@@ -17,6 +17,7 @@ import logging
 from datetime import datetime
 from typing import Any, Dict
 from dotenv import load_dotenv
+import unicodedata
 
 load_dotenv()
 
@@ -32,6 +33,12 @@ FRONTEND_DIR = BASE_DIR / "frontend"
 FORM_JSON_PATH = FRONTEND_DIR / "form_output.json"
 
 FIRMS_DIR = BASE_DIR / "data" / "firms"
+
+def remove_diacritics(text: str) -> str:
+    if not isinstance(text, str):
+        return text
+    normalized = unicodedata.normalize("NFD", text)
+    return "".join(c for c in normalized if unicodedata.category(c) != "Mn")
 
 def flatten(prefix: str, obj: Any, out: Dict[str, Any]) -> None:
     """
@@ -140,6 +147,16 @@ def main() -> int:
 
     # Always include TAX_CODE / CUI
     merged_output["cui"] = TAX_CODE
+
+    cleaned_output = {}
+    for key, value in merged_output.items():
+        new_key = remove_diacritics(key)
+        if isinstance(value, str):
+            cleaned_output[new_key] = remove_diacritics(value)
+        else:
+            cleaned_output[new_key] = value
+
+    merged_output = cleaned_output
 
     details_filename = FIRMS_DIR / f"{TAX_CODE}.json"
 
