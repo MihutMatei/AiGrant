@@ -1,0 +1,169 @@
+{
+  "id": "eic-accelerator-2026",
+  "type": "grant",
+  "title": "EIC Accelerator",
+  "program_name": "European Innovation Council Accelerator",
+  "source_url": "https://eic.ec.europa.eu/eic-funding-opportunities/eic-accelerator_en",
+  "region": [
+    "EU"
+  ],
+  "eligible_countries": [
+    "AT",
+    "BE",
+    "BG",
+    "HR",
+    "CY",
+    "CZ",
+    "DK",
+    "EE",
+    "FI",
+    "FR",
+    "DE",
+    "GR",
+    "HU",
+    "IE",
+    "IT",
+    "LV",
+    "LT",
+    "LU",
+    "MT",
+    "NL",
+    "PL",
+    "PT",
+    "RO",
+    "SK",
+    "SI",
+    "ES",
+    "SE",
+    "IS",
+    "NO",
+    "LI",
+    "CH",
+    "UK",
+    "associated_countries_to_Horizon_Europe"
+  ],
+  "eligible_caen_codes": [
+    "6201",
+    "6202",
+    "7219",
+    "7220",
+    "7410",
+    "7420",
+    "7490",
+    "7211",
+    "7212",
+    "6311",
+    "6312",
+    "6399",
+    "7320",
+    "5821",
+    "5829",
+    "5911",
+    "5912",
+    "5913"
+  ],
+  "funding_min": 50000,
+  "funding_max": 2500000,
+  "funding_currency": "EUR",
+  "non_dilutive": true,
+  "cofinancing_required": false,
+  "cofinancing_min_ratio": null,
+  "summary": "The EIC Accelerator supports innovative start-ups and SMEs with high potential to develop and scale up breakthrough technologies and innovations. It provides grant funding up to €2.5 million for innovation activities (TRL 6-8), complemented by equity investments from €1 million up to €10 million for scale-up, coaching, mentoring and business acceleration services.",
+  "raw_text": "EIC Accelerator - European Innovation Council - European Commission Skip to main content EIC Accelerator What for Develop and scaleup innovations Develop and scaleup innovations with the potential to create or disrupt markets (TRL 6-8). Patient capital principle. Who can apply Startups and SMEs Single start-ups and SMEs, individuals intending to launch a SME and small mid-caps (can apply for equity only). What you get Grants and investments Grant component below EUR 2.5 million. Up to € 10 million of equity investments, coaching & mentoring, networking. What is the EIC Accelerator ? The EIC Accelerator is a funding programme under Horizon Europe that offers support to start-ups and SMEs that: have a innovative, game changing product , service or business model that could create new markets or disrupt existing ones in Europe and even worldwide, have the ambition and commitment to scale up , are looking for substantial funding , but the risks involved are too high for private investors alone to invest Grant funding Lump sum contribution below € 2.5 million , for innovation activities (TRL 6-8), to be completed within 24 months. Grant only - for start-ups and SMEs with capacity to scale-up. To be provided only once during the implementation period of the Horizon Europe programme (2021-2027) Investment component To fill the gap for high - risk innovation to a stage where they can be fully financed by other investments. €1 - €10 million . Higher amounts available in STEP ScaleUP . Blended finance: a grant component & direct equity or quasi-equity such as convertible loans. Investment only: for mid caps companies and companies that have received a «grant only». EIC Accelerator Challenges For projects that match any of the pre-defined topics of the EIC Accelerator Challenges. The overall budget in 2026 is €220 million. Accelerator Challenges EIC Accelerator Open For projects that don't match the EIC Accelerator topics, the EIC Accelerator Open is open to proposals in any field of technology. The overall budget for the EIC Accelerator Open in 2026 is €414 million . Accelerator Open Extensive support Access to a range of tailor-made Business Acceleration Services (BAS) for beneficiaries to leverage investments: Access to global partners Access to coaches, mentors, expertise and training Access to innovation ecosystem and peers Streamlined application process EIC Accelerator selection process comprises 3 steps. Each step passed successfully give access to the next step: Writing a short proposal Submission of a full proposal Face to face interview with the EIC Jury...",
+  "eligibility_criteria": [
+    "Be a start-up, SME or small mid-cap up to 499 employees",
+    "Be based in an EU Member State or a country associated to Horizon Europe",
+    "Have an innovation at Technology Readiness Level (TRL) 6 to 8",
+    "Present a game-changing innovation with scale-up potential",
+    "For mid-caps, eligibility is for investment only",
+    "Applicants from third countries must relocate company before full application",
+    "Single application allowed; multiple only after results of original submission",
+    "Innovation must create or disrupt markets"
+  ],
+  "required_documents": [
+    "Short proposal including summary and innovation details",
+    "Pitch deck (PDF format, up to 10 slides)",
+    "Video pitch (up to 3 minutes)",
+    "Full business plan (for full proposal stage)",
+    "Full pitch deck (PDF)",
+    "Video pitch of core team"
+  ],
+  "required_documents_full": [
+    {
+      "id": "short_proposal",
+      "name": "Short Proposal",
+      "description": "A short form summarising the innovation, market potential and team.",
+      "ai_can_generate": true,
+      "official_template_url": null,
+      "format": [
+        "pdf"
+      ]
+    },
+    {
+      "id": "pitch_deck",
+      "name": "Pitch Deck",
+      "description": "Presentation slides outlining the business and innovation.",
+      "ai_can_generate": true,
+      "official_template_url": null,
+      "format": [
+        "pdf"
+      ]
+    },
+    {
+      "id": "video_pitch",
+      "name": "Video Pitch",
+      "description": "A 3-minute video with core team members presenting motivation.",
+      "ai_can_generate": false,
+      "official_template_url": null,
+      "format": [
+        "mp4",
+        "avi"
+      ]
+    },
+    {
+      "id": "full_business_plan",
+      "name": "Full Business Plan",
+      "description": "Detailed business plan to support the full proposal.",
+      "ai_can_generate": true,
+      "official_template_url": null,
+      "format": [
+        "pdf",
+        "docx"
+      ]
+    }
+  ],
+  "application_format": "online_portal",
+  "application_portal_name": "Funding and Tenders Portal",
+  "application_language": "en",
+  "team_information_required": true,
+  "financials_required": true,
+  "traction_required": true,
+  "budget_template_required": true,
+  "deadlines": [
+    {
+      "label": "2026 Cut-off 1",
+      "date": "2026-01-07"
+    },
+    {
+      "label": "2026 Cut-off 2",
+      "date": "2026-03-04"
+    },
+    {
+      "label": "2026 Cut-off 3",
+      "date": "2026-05-06"
+    },
+    {
+      "label": "2026 Cut-off 4",
+      "date": "2026-07-08"
+    },
+    {
+      "label": "2026 Cut-off 5",
+      "date": "2026-09-02"
+    },
+    {
+      "label": "2026 Cut-off 6",
+      "date": "2026-11-04"
+    }
+  ],
+  "additional_notes": "Grant funding is non-dilutive. Investment component is equity/quasi-equity and requires company maturity assessment. Access to Business Acceleration Services included. Applicants from third countries must relocate before full proposal submission."
+}
