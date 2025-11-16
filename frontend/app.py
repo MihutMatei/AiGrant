@@ -1,3 +1,16 @@
+# inainte de demo:
+# 0.in .env pui api key nou de openapi
+# 1.stergi data/generated/<cui>/*
+# 2.stergi outputs/<cui>/match_opportunities.json
+# 3.source .venv/bin/activate
+# 4.source .env
+# 5.rulezi python3 app.py DIN FOLDERUL frontend
+# 6.navighezi site
+# 7.dupa ce dai pe find grants dai un refresh cand e gata/ poti sa switch spre terminal sau pui
+# ai doilea monitor sa vezi cand sa dai refresh
+# 8. alegi generare de documente cu putine docs, putem intreba in public sa se vada ca nu e fake
+# 9. cand e gata, (se vede in terminal) se da refresh !!!se face iar api call la openai so be carefull
+# cu banii
 from flask import (
     Flask,
     request,
@@ -16,6 +29,7 @@ import os
 import copy
 from datetime import datetime
 import subprocess
+
 
 app = Flask(__name__, template_folder="../templates/", static_folder="../public/")
 app.secret_key = "replace_this_with_a_secure_random_key"
