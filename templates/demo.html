@@ -3,6 +3,51 @@
 {% block title %}Demo · aiGrant{% endblock %}
 
 {% block content %}
+
+<style>
+  .try-app-btn {
+    position: relative;
+    overflow: hidden;
+    border: none;
+    background: linear-gradient(135deg, #5e56f0, #4338ca);
+    box-shadow: 0 4px 15px rgba(67, 56, 202, 0.3);
+    text-decoration: none !important;   /* ← ADD THIS */
+  }
+
+  /* Hover: lift + glow + icon move */
+  .try-app-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(67, 56, 202, 0.4);
+    background: linear-gradient(135deg, #6c63ff, #4c46c4);
+    text-decoration: none !important;   /* ← ADD THIS TOO */
+  }
+
+  .try-app-btn:hover i {
+    transform: translateX(4px);
+  }
+
+  /* Optional: subtle shine animation */
+  .try-app-btn::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.2), transparent);
+    transition: 0.7s;
+  }
+
+  .try-app-btn:hover::before {
+    left: 100%;
+  }
+
+  /* Bullet-proof: remove underline from any child (span, etc.) */
+  .try-app-btn span,
+  .try-app-btn:hover span {
+    text-decoration: none !important;
+  }
+</style>
+
 <div class="row g-4 align-items-center">
   <div class="col-lg-7">
     <div class="mb-3 d-flex gap-2 align-items-center">
@@ -16,24 +61,10 @@
       Try the <span style="color:#a5b4fc;">demo workspace</span>
     </h1>
 
-    <p class="text-muted-soft mb-4" style="max-width: 520px;">
+    <p class="text-muted-soft mb-4" style="max-width: 720px;">
       This environment shows only a demo interface — real opportunities are
       available exclusively for paying customers.
     </p>
-
-    <div class="d-flex flex-wrap gap-3 align-items-center">
-      {% if not session.get('user') %}
-        <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg d-flex align-items-center gap-2">
-          <i class="bi bi-box-arrow-in-right"></i>
-          <span>Login as demo company</span>
-        </a>
-      {% else %}
-        <a href="{{ url_for('grants') }}" class="btn btn-primary btn-lg d-flex align-items-center gap-2">
-          <i class="bi bi-compass"></i>
-          <span>Find grants</span>
-        </a>
-      {% endif %}
-    </div>
 
     <div class="mt-4 d-flex flex-wrap gap-4">
       <div>
@@ -49,6 +80,21 @@
         </div>
       </div>
     </div>
+
+    <div>
+      <a href="{{ url_for('login') }}"
+        class="btn btn-primary d-inline-flex align-items-center gap-2 mt-4 text-nowrap try-app-btn"
+        style="
+          font-size: 1.2rem;
+          padding: 1.0rem 3.5rem !important;
+          width: fit-content !important;
+          display: inline-flex !important;
+          transition: all 0.25s ease;
+        ">
+        <i class="bi bi-box-arrow-right"></i>
+        <span>Login as demo company</span>
+      </a>
+    </div>
   </div>
 
   <div class="col-lg-5">
@@ -58,7 +104,7 @@
               style="width: 32px; height: 32px; background: var(--primary-soft);">
           <i class="bi bi-buildings"></i>
         </span>
-        Demo company snapshot
+        Company details
       </h5>
 
       {% if user %}
