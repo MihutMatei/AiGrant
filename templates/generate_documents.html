@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Generate documents · {{ grant.title }} · aiGrant{% endblock %}
+
+{% block content %}
+<div class="mb-3">
+  <a href="{{ url_for('grant_detail', grant_id=grant.id) }}"
+     class="text-muted-soft small d-inline-flex align-items-center gap-1">
+    <i class="bi bi-arrow-left"></i>
+    Back to grant details
+  </a>
+</div>
+
+<div class="glass-card">
+  <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
+    <div>
+      <h1 class="h5 mb-1">AI document generation for {{ grant.title }}</h1>
+      <p class="text-muted-soft small mb-0">
+        This page will generate the core documents needed for this program using an AI
+        workflow. In this demo, we only show the structure and statuses – no real
+        generation is triggered yet.
+      </p>
+    </div>
+
+    {% if user %}
+      <div class="small d-flex flex-column align-items-start text-start">
+        <span class="fw-semibold">{{ user.name }}</span>
+        <span class="text-muted-soft">CUI: {{ user.cui or "—" }}</span>
+      </div>
+    {% endif %}
+  </div>
+
+  <hr class="border-secondary">
+
+  <div class="mt-3">
+    <h2 class="h6 text-uppercase text-muted-soft mb-2">Documents in this generation run</h2>
+
+    {% if grant.required_documents %}
+      <div class="vstack gap-2">
+        {% for doc in grant.required_documents %}
+          <div class="d-flex justify-content-between align-items-start p-2 rounded"
+              style="background-color: rgba(15, 23, 42, 0.7); border: 1px solid rgba(55, 65, 81, 0.9);">
+            <div class="d-flex align-items-start gap-2 small">
+              <i class="bi bi-file-earmark-text mt-1"></i>
+              <div>
+                <div class="fw-semibold">{{ doc }}</div>
+                <div class="text-muted-soft">
+                  Draft generation pending – AI pipeline not connected in this demo.
+                </div>
+              </div>
+            </div>
+            <div class="d-flex align-items-center gap-1 small align-safe-center">
+              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              <span>Preparing…</span>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="text-muted-soft small mb-0">
+        This grant does not list specific documents in the demo dataset.
+        In production, aiGrant would infer the required documents from the official call.
+      </p>
+    {% endif %}
+  </div>
+
+  <hr class="border-secondary mt-4 mb-3">
+
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+    <div class="text-muted-soft small">
+      In the full product, this step will hand off to an AI backend that drafts
+      each document based on your company profile and this grant’s requirements.
+    </div>
+    <a href="{{ url_for('grant_detail', grant_id=grant.id) }}"
+       class="btn btn-outline-light btn-sm d-flex align-items-center gap-1">
+      <i class="bi bi-arrow-left-circle"></i>
+      <span>Back to grant</span>
+    </a>
+  </div>
+</div>
+{% endblock %}
