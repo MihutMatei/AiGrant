@@ -1,4 +1,4 @@
-from flask import Flask, request, session, redirect, url_for, render_template
+from flask import Flask, request, session, redirect, url_for, render_template, send_from_directory
 import sys
 import requests
 import feedparser
@@ -12,11 +12,9 @@ import subprocess
 app = Flask(__name__, template_folder="../templates/", static_folder="../public/")
 app.secret_key = "replace_this_with_a_secure_random_key"
 
-# fișierul de output pentru formular
-USERS_FILE = "form_output.json"
-
 # bază pentru path-uri relative
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+USERS_FILE = os.path.join(BASE_DIR, "form_output.json")
 REQUEST_SCRIPT = os.path.join(BASE_DIR, "..", "input", "request.py")
 MATCH_SCRIPT = os.path.join(BASE_DIR, "..", "rag", "run_match_opp.py")
 
@@ -677,6 +675,8 @@ def grant_documents(grant_id):
         return redirect(url_for("login"))
 
     cui = user.get("cui")
+
+    # încercăm să reconstruim grant-ul ca înainte
     matches = load_match_opportunities(cui) if cui else []
     match = next((m for m in matches if str(m.get("id")) == str(grant_id)), None)
 
@@ -696,8 +696,55 @@ def grant_documents(grant_id):
     if not grant:
         return "Grant not found", 404
 
-    return render_template("generate_documents.html", grant=grant, user=user)
+    # 🟦 AICI construim lista de documente din folderul ../data/generated/<cui>
+    documents = []
+    if cui:
+        gen_dir = os.path.join(BASE_DIR, "..", "data", "generated", str(cui))
+        if os.path.isdir(gen_dir):
+            for filename in sorted(os.listdir(gen_dir)):
+                # vrem doar PDF-uri
+                if not filename.lower().endswith(".pdf"):
+                    continue
 
+                # numele afișat în UI – dacă vrei poți să-l "prettify"
+                display_name = filename  # sau fă replace("_", " ") etc.
+
+                documents.append(
+                    {
+                        "name": display_name,
+                        "has_file": True,
+                        "filename": filename,
+                        "download_url": url_for(
+                            "download_generated", cui=cui, filename=filename
+                        ),
+                    }
+                )
+
+    # fallback: dacă nu avem nimic generat, folosim totuși required_documents ca listă de "pending"
+    if not documents:
+        doc_names = grant.get("required_documents") or []
+        for doc_name in doc_names:
+            documents.append(
+                {
+                    "name": doc_name,
+                    "has_file": False,
+                    "filename": None,
+                    "download_url": None,
+                }
+            )
+
+    return render_template("generate_documents.html", grant=grant, user=user, documents=documents)
+
+@app.route("/generated/<cui>/<path:filename>")
+def download_generated(cui, filename):
+    gen_dir = os.path.join(BASE_DIR, "..", "data", "generated", str(cui))
+    full_path = os.path.join(gen_dir, filename)
+
+    if not os.path.exists(full_path):
+        return "File not found", 404
+
+    return send_from_directory(gen_dir, filename, as_attachment=True)
+    
 
 if __name__ == "__main__":
     app.run(debug=True)
