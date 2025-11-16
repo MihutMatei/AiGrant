@@ -9,21 +9,31 @@ from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
 from reportlab.lib.units import inch
 from reportlab.platypus import (
-    SimpleDocTemplate, Paragraph, Spacer,
-    Image, Table, TableStyle, PageBreak, KeepTogether
+    SimpleDocTemplate,
+    Paragraph,
+    Spacer,
+    Image,
+    Table,
+    TableStyle,
+    PageBreak,
+    KeepTogether,
 )
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase import pdfmetrics
+from pathlib import Path
 
 # ----------------------------
 # Register UTF-8 fonts
 # ----------------------------
-pdfmetrics.registerFont(TTFont('DejaVu', 'DejaVuSerif.ttf'))
-pdfmetrics.registerFont(TTFont('DejaVu-Bold', 'DejaVuSerif-Bold.ttf'))
-pdfmetrics.registerFont(TTFont('DejaVu-Italic', 'DejaVuSerif-Italic.ttf'))
+BASE_DIR = Path(__file__).resolve().parents[0]
+
+pdfmetrics.registerFont(TTFont("DejaVu", BASE_DIR / "DejaVuSerif.ttf"))
+pdfmetrics.registerFont(TTFont("DejaVu-Bold", BASE_DIR / "DejaVuSerif-Bold.ttf"))
+pdfmetrics.registerFont(TTFont("DejaVu-Italic", BASE_DIR / "DejaVuSerif-Italic.ttf"))
 
 CURRENT_DATE = datetime.now().strftime("%B %d, %Y")
+
 
 # ----------------------------
 # Page number drawing
@@ -34,10 +44,9 @@ def _draw_page_number(canvas_obj, doc):
         canvas_obj.setFont("DejaVu", 10)
         canvas_obj.setFillColor(colors.grey)
         canvas_obj.drawRightString(
-            doc.rightMargin + doc.width,
-            doc.bottomMargin / 2,
-            f"Page {page_num - 1}"
+            doc.rightMargin + doc.width, doc.bottomMargin / 2, f"Page {page_num - 1}"
         )
+
 
 # ----------------------------
 # Title page drawing
@@ -50,8 +59,8 @@ def _draw_title_page(canvas_obj, doc, company_name, tagline, logo_path=None):
     # Draw logo if provided
     if logo_path and os.path.exists(logo_path):
         try:
-            img = Image(logo_path, width=2*inch, height=2*inch)
-            img.drawOn(canvas_obj, (width - 2*inch)/2, y)
+            img = Image(logo_path, width=2 * inch, height=2 * inch)
+            img.drawOn(canvas_obj, (width - 2 * inch) / 2, y)
             y -= 80
         except Exception:
             # ignore logo loading errors
@@ -60,24 +69,27 @@ def _draw_title_page(canvas_obj, doc, company_name, tagline, logo_path=None):
     # Draw company name
     canvas_obj.setFont("DejaVu-Bold", 36)
     canvas_obj.setFillColor(colors.HexColor("#1a3c6e"))
-    canvas_obj.drawCentredString(width/2, y, company_name or "")
+    canvas_obj.drawCentredString(width / 2, y, company_name or "")
 
     # Draw tagline
     y -= 50
     canvas_obj.setFont("DejaVu", 16)
     canvas_obj.setFillColor(colors.HexColor("#2c5282"))
-    canvas_obj.drawCentredString(width/2, y, tagline or "")
+    canvas_obj.drawCentredString(width / 2, y, tagline or "")
 
     # Draw date
     y -= 40
     canvas_obj.setFont("DejaVu-Italic", 14)
     canvas_obj.setFillColor(colors.grey)
-    canvas_obj.drawCentredString(width/2, y, CURRENT_DATE)
+    canvas_obj.drawCentredString(width / 2, y, CURRENT_DATE)
+
 
 # ----------------------------
 # PDF generator
 # ----------------------------
-def generate_presentation(json_file: str, pdf_file: str, logo_path: str = None, registry_json_path: str = None):
+def generate_presentation(
+    json_file: str, pdf_file: str, logo_path: str = None, registry_json_path: str = None
+):
     """Generates a company presentation PDF from JSON input."""
     try:
         # Load main JSON
@@ -103,26 +115,34 @@ def generate_presentation(json_file: str, pdf_file: str, logo_path: str = None, 
     doc = SimpleDocTemplate(
         pdf_file,
         pagesize=letter,
-        rightMargin=72, leftMargin=72,
-        topMargin=72, bottomMargin=72
+        rightMargin=72,
+        leftMargin=72,
+        topMargin=72,
+        bottomMargin=72,
     )
 
     # ----------------------------
     # Styles
     # ----------------------------
     section_title_style = ParagraphStyle(
-        'SectionTitle',
-        fontName='DejaVu-Bold',
+        "SectionTitle",
+        fontName="DejaVu-Bold",
         fontSize=22,
         leading=28,  # slightly larger than fontSize to give breathing room
         textColor=colors.HexColor("#1a3c6e"),
         spaceBefore=20,
-        spaceAfter=24
+        spaceAfter=24,
     )
-    body_style = ParagraphStyle('Body', fontName='DejaVu', fontSize=12, leading=22,
-                                spaceAfter=14, alignment=4)
-    detail_style = ParagraphStyle('Detail', fontName='DejaVu', fontSize=11, leading=14,
-                                  textColor=colors.HexColor("#2d3748"))
+    body_style = ParagraphStyle(
+        "Body", fontName="DejaVu", fontSize=12, leading=22, spaceAfter=14, alignment=4
+    )
+    detail_style = ParagraphStyle(
+        "Detail",
+        fontName="DejaVu",
+        fontSize=11,
+        leading=14,
+        textColor=colors.HexColor("#2d3748"),
+    )
 
     content = []
 
@@ -142,27 +162,35 @@ def generate_presentation(json_file: str, pdf_file: str, logo_path: str = None, 
         ("CAEN", registry_data.get("caen_code")),
     ]
     # Keep only non-empty/non-null values
-    details = [(label, str(value)) for label, value in details_raw if value not in (None, "", "null")]
+    details = [
+        (label, str(value))
+        for label, value in details_raw
+        if value not in (None, "", "null")
+    ]
 
     if details:
-        table = Table(details, colWidths=[2*inch, 4.7*inch])
-        table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (0, -1), colors.HexColor("#f7fafc")),
-            ('TEXTCOLOR', (0, 0), (0, -1), colors.HexColor("#2d3748")),
-            ('FONTNAME', (0, 0), (0, -1), 'DejaVu-Bold'),
-            ('FONTSIZE', (0, 0), (0, -1), 11),
-            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-            ('LEFTPADDING', (1, 0), (1, -1), 6),
-            ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor("#e2e8f0")),
-            ('BACKGROUND', (1, 0), (1, -1), colors.white),
-        ]))
+        table = Table(details, colWidths=[2 * inch, 4.7 * inch])
+        table.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (0, -1), colors.HexColor("#f7fafc")),
+                    ("TEXTCOLOR", (0, 0), (0, -1), colors.HexColor("#2d3748")),
+                    ("FONTNAME", (0, 0), (0, -1), "DejaVu-Bold"),
+                    ("FONTSIZE", (0, 0), (0, -1), 11),
+                    ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                    ("LEFTPADDING", (1, 0), (1, -1), 6),
+                    ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#e2e8f0")),
+                    ("BACKGROUND", (1, 0), (1, -1), colors.white),
+                ]
+            )
+        )
 
         content += [
             PageBreak(),  # start second page
             Paragraph("Company Details", section_title_style),
             Spacer(1, 12),
             table,
-            Spacer(1, 20)
+            Spacer(1, 20),
         ]
 
     # -----------------------------
@@ -172,11 +200,9 @@ def generate_presentation(json_file: str, pdf_file: str, logo_path: str = None, 
         body_text = sec["body"].replace("\n", "<br/><br/>")
         body_para = Paragraph(body_text, body_style)
         content.append(
-            KeepTogether([
-                Paragraph(sec["title"], section_title_style),
-                Spacer(1, 24),
-                body_para
-            ])
+            KeepTogether(
+                [Paragraph(sec["title"], section_title_style), Spacer(1, 24), body_para]
+            )
         )
 
     # -----------------------------
@@ -185,19 +211,24 @@ def generate_presentation(json_file: str, pdf_file: str, logo_path: str = None, 
     try:
         doc.build(
             content,
-            onFirstPage=lambda canvas_obj, doc: _draw_title_page(canvas_obj, doc, company_name, tagline, logo_path),
-            onLaterPages=_draw_page_number
+            onFirstPage=lambda canvas_obj, doc: _draw_title_page(
+                canvas_obj, doc, company_name, tagline, logo_path
+            ),
+            onLaterPages=_draw_page_number,
         )
         return 1  # success
     except Exception:
         return 0  # error
+
 
 # -----------------------------
 # CLI
 # -----------------------------
 if __name__ == "__main__":
     if len(sys.argv) <= 3:
-        print(f"Usage: {sys.argv[0]} <json_text> <json_date_firma> <output_pdf_name>\nAlso logo.png/jpg/jpeg will be auto-detected if present.")
+        print(
+            f"Usage: {sys.argv[0]} <json_text> <json_date_firma> <output_pdf_name>\nAlso logo.png/jpg/jpeg will be auto-detected if present."
+        )
         sys.exit(0)
 
     json_path = sys.argv[1]
