@@ -25,10 +25,6 @@
             Log in with the demo account to explore.
           </p>
         </div>
-        <span class="badge-soft">
-          <i class="bi bi-person-badge me-1"></i>
-          Demo account
-        </span>
       </div>
 
       {% if error %}
@@ -48,6 +44,7 @@
           name="email"
           placeholder="Enter your email"
           required
+          value="{{ email or '' }}"
         >
       </div>
 
@@ -60,6 +57,7 @@
           name="password"
           placeholder="Enter your password"
           required
+          value="{{ password or '' }}"
         >
       </div>
 

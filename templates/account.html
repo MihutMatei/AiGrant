@@ -1,8 +1,53 @@
 {% extends "base.html" %}
 
-{% block title %}Account · aiGrant{% endblock %}
+{% block title %}My account · aiGrant{% endblock %}
 
 {% block content %}
+
+<style>
+  .try-app-btn {
+    position: relative;
+    overflow: hidden;
+    border: none;
+    background: linear-gradient(135deg, #5e56f0, #4338ca);
+    box-shadow: 0 4px 15px rgba(67, 56, 202, 0.3);
+    text-decoration: none !important;   /* ← ADD THIS */
+  }
+
+  /* Hover: lift + glow + icon move */
+  .try-app-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(67, 56, 202, 0.4);
+    background: linear-gradient(135deg, #6c63ff, #4c46c4);
+    text-decoration: none !important;   /* ← ADD THIS TOO */
+  }
+
+  .try-app-btn:hover i {
+    transform: translateX(4px);
+  }
+
+  /* Optional: subtle shine animation */
+  .try-app-btn::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.2), transparent);
+    transition: 0.7s;
+  }
+
+  .try-app-btn:hover::before {
+    left: 100%;
+  }
+
+  /* Bullet-proof: remove underline from any child (span, etc.) */
+  .try-app-btn span,
+  .try-app-btn:hover span {
+    text-decoration: none !important;
+  }
+</style>
+
 <div class="glass-card">
   <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
     <div>
@@ -183,25 +228,48 @@
     </div>
 
     <!-- Bottom row: Save / text / Find grants -->
+    <!-- Bottom row: Save / text / Find grants -->
     <div class="col-12 mt-3">
       <hr class="border-secondary mb-3">
       <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+
         <!-- Save changes -->
-        <button type="submit" name="action" value="save" class="btn btn-primary">
-          <i class="bi bi-save me-1"></i>
-          Save changes
+        <button type="submit" name="action" value="save"
+          class="btn btn-primary d-inline-flex align-items-center gap-2 text-nowrap try-app-btn"
+          style="
+            font-size: 1rem;
+            padding: 0.6rem 2.5rem !important;
+            width: fit-content !important;
+            display: inline-flex !important;
+            transition: all 0.25s ease;
+          ">
+          <i class="bi bi-save"></i>
+          <span>Save changes</span>
         </button>
 
         <!-- Middle text -->
-        <div class="text-muted-soft small flex-grow-1 text-center">
+        <div class="text-muted-soft small flex-grow-1 text-center d-flex align-items-center justify-content-center">
           After updating your profile, discover which grants might fit your startup.
         </div>
 
         <!-- Find grants (also submits form) -->
-        <button type="submit" name="action" value="find_grants" class="btn btn-outline-light">
-          <i class="bi bi-compass me-1"></i>
-          Find grants
+        <button type="submit" name="action" value="find_grants"
+          class="btn btn-outline-light d-inline-flex align-items-center gap-2 text-nowrap try-app-btn"
+          style="
+            font-size: 1rem;
+            padding: 0.6rem 2.5rem !important;
+            width: fit-content !important;
+            display: inline-flex !important;
+            transition: all 0.25s ease;
+          ">
+          <i class="bi bi-compass"></i>
+          <span>Find grants</span>
         </button>
+
+      </div>
+    </div>
+
+
       </div>
     </div>
   </form>
