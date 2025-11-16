@@ -25,15 +25,16 @@ def load_all_opportunities() -> Dict[str, Dict[str, Any]]:
     Returnează un dict {id: opportunity_dict} cu toate granturile/VC/acceleratoarele.
     """
     by_id: Dict[str, Dict[str, Any]] = {}
-    for fname in ["grants.json", "vcs.json", "accelerators.json"]:
+    for fname in ["sources.json"]:
         path = OPP_DIR / fname
         if not path.exists():
             continue
         with path.open("r", encoding="utf-8") as f:
             items = json.load(f)
-        if isinstance(items, dict):
-            items = [items]
-        for op in items:
+        all_opps = []
+        for opp_type in ["grants", "accelerators", "vcs"]:
+            all_opps = all_opps + items.get(opp_type, [])
+        for op in all_opps:
             op_id = op.get("id")
             if op_id:
                 by_id[op_id] = op
@@ -150,6 +151,11 @@ def recommend_opportunities_for_firm(
                 "type": opp.get("type"),
                 "title": opp.get("title") or opp.get("name"),
                 "semantic_score": semantic_score,
+                "eligibility": meta.get("eligible"),
+                "deadlines": meta.get("deadlines"),
+                "funding": meta.get("funding"),
+                "eligibility_criteria": meta.get("eligibility_criteria"),
+                "number_of_docs": meta.get("number_of_docs"),
                 "match_reasons": reasons,
                 "source_url": opp.get("source_url"),
             }

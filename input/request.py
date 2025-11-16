@@ -16,16 +16,15 @@ import sys
 import logging
 from datetime import datetime
 from typing import Any, Dict
-from pathlib import Path
 from dotenv import load_dotenv
+import unicodedata
+from pathlib import Path
 
-# Load environment variables from .env file
 load_dotenv()
 
 # Configure logging for production
 logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s"
+    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
 )
 
 
@@ -34,6 +33,14 @@ FRONTEND_DIR = BASE_DIR / "frontend"
 FORM_JSON_PATH = FRONTEND_DIR / "form_output.json"
 
 FIRMS_DIR = BASE_DIR / "data" / "firms"
+
+
+def remove_diacritics(text: str) -> str:
+    if not isinstance(text, str):
+        return text
+    normalized = unicodedata.normalize("NFD", text)
+    return "".join(c for c in normalized if unicodedata.category(c) != "Mn")
+
 
 def flatten(prefix: str, obj: Any, out: Dict[str, Any]) -> None:
     """
@@ -52,6 +59,7 @@ def flatten(prefix: str, obj: Any, out: Dict[str, Any]) -> None:
             flatten(f"{prefix}_{i}", item, out)
     else:
         out[prefix] = obj
+
 
 def fetch_json(url: str, headers: Dict[str, str]) -> dict:
     """
@@ -72,6 +80,7 @@ def fetch_json(url: str, headers: Dict[str, str]) -> dict:
         logging.warning(f"Failed to fetch {url}: {e}")
         return {}
 
+
 def main() -> int:
     """Main entry point of the script."""
 
@@ -91,8 +100,12 @@ def main() -> int:
 
     OPENAPI_KEY = os.getenv("API_KEY")
 
+    print(OPENAPI_KEY)
+
     BASE_URL = "https://api.openapi.ro/api/companies/{tax_code}/"
-    BASE_URL_COMPLETE = "https://api.openapi.ro/api/companies/{tax_code}/balances/{year}"
+    BASE_URL_COMPLETE = (
+        "https://api.openapi.ro/api/companies/{tax_code}/balances/{year}"
+    )
     headers = {"x-api-key": OPENAPI_KEY}
 
     # Step 1: Fetch basic company info
@@ -108,7 +121,9 @@ def main() -> int:
     for i in range(5):
         year = current_year - i
         logging.info(f"Attempting to fetch balances for year {year}")
-        data = fetch_json(BASE_URL_COMPLETE.format(tax_code=TAX_CODE, year=year), headers)
+        data = fetch_json(
+            BASE_URL_COMPLETE.format(tax_code=TAX_CODE, year=year), headers
+        )
         if data and "error" not in data:
             balances_data = data
             logging.info(f"Balances found for year {year}")
@@ -141,6 +156,16 @@ def main() -> int:
     # Always include TAX_CODE / CUI
     merged_output["cui"] = TAX_CODE
 
+    cleaned_output = {}
+    for key, value in merged_output.items():
+        new_key = remove_diacritics(key)
+        if isinstance(value, str):
+            cleaned_output[new_key] = remove_diacritics(value)
+        else:
+            cleaned_output[new_key] = value
+
+    merged_output = cleaned_output
+
     details_filename = FIRMS_DIR / f"{TAX_CODE}.json"
 
     # Step 4: Save to JSON file
@@ -153,6 +178,7 @@ def main() -> int:
         return 0
 
     return 1
+
 
 if __name__ == "__main__":
     sys.exit(main())

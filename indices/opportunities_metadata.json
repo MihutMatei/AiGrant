@@ -1,15 +1,195 @@
 [
   {
-    "id": "grant_ro_mock_1",
+    "id": "code4europe-2025",
     "type": "grant",
-    "title": "Grant IMM pentru Consultanță și Digitalizare",
+    "title": "Small Grants - Coding Projects for the Nordic Region (Code4Europe Grant)",
     "region": [
-      "Romania"
+      "Nordic Region",
+      "Europe"
     ],
     "eligible_caen_codes": [
-      "7022",
-      "6201"
+      "6201",
+      "6202",
+      "6209",
+      "8559"
     ],
-    "source_url": "https://mock.gov.ro/grant-digitalizare"
+    "deadlines": [
+      {
+        "label": "Opening date",
+        "date": "2025-11-07"
+      },
+      {
+        "label": "Deadline date",
+        "date": "2026-01-12T17:00:00+01:00"
+      }
+    ],
+    "eligibility_criteria": [
+      "Alignment with the goals and priorities of the European Code Week",
+      "Focus on strengthening the digital skills of young people, especially girls",
+      "Project should have an educational digital/coding focus",
+      "Applicants must submit a clear proposal indicating use of funds"
+    ],
+    "number_of_docs": 1,
+    "source_url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/home",
+    "funding": 10000
+  },
+  {
+    "id": "code4europe-101158834",
+    "type": "grant",
+    "title": "Code4Europe - empowering the new generation of Young Digital Europeans",
+    "region": [
+      "EU"
+    ],
+    "eligible_caen_codes": [
+      "6201",
+      "6202",
+      "6203",
+      "6209",
+      "6311",
+      "6312",
+      "8559"
+    ],
+    "deadlines": [
+      {
+        "label": "Opening date",
+        "date": "2025-11-07"
+      },
+      {
+        "label": "Deadline",
+        "date": "2026-01-13"
+      }
+    ],
+    "eligibility_criteria": [
+      "Projects must demonstrate significant impact in promoting programming, computational thinking, or digital skills.",
+      "Eligible applicants are organizations (including but not limited to NGOs, companies, schools) across EU.",
+      "Projects should target young people, especially girls.",
+      "Activities must be relevant to CodeWeek priorities and have educational impact.",
+      "Scalability and replicability of the project are assessed."
+    ],
+    "number_of_docs": 2,
+    "source_url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/digital-2023-skills-04-boostingdigit",
+    "funding": 2500
+  },
+  {
+    "id": "ffplus-ai-innovation-2025",
+    "type": "grant",
+    "title": "Second call for innovation studies for the development of generative AI models",
+    "region": [
+      "EU"
+    ],
+    "eligible_caen_codes": [
+      "6201",
+      "6202",
+      "6209",
+      "5829",
+      "6311",
+      "6312"
+    ],
+    "deadlines": [
+      {
+        "label": "Submission deadline",
+        "date": "2026-02-25T17:00:00+01:00"
+      },
+      {
+        "label": "Opening date",
+        "date": "2025-12-03T00:00:00+01:00"
+      }
+    ],
+    "eligibility_criteria": [
+      "Consortium led by an SME or startup; up to two supporting participants/partners (max 3 partners total)",
+      "Main participant must be legally established in an EU Member State, eligible EEA country, or a country associated to the Digital Europe Programme with an association agreement in force before the deadline",
+      "Only legal entities (no individuals/natural persons) are eligible",
+      "SMEs may participate in only one of the FFplus subproject types (business experiments OR innovation studies)",
+      "Project focus: development/customization of generative AI models leveraging HPC",
+      "Demonstrate technical/business competence in AI, ML, software development, and access to suitable data",
+      "Reporting on adherence to EU guidelines for trustworthy AI is required",
+      "Maximum of 10 months duration per funded innovation study"
+    ],
+    "number_of_docs": 7,
+    "source_url": "https://www.ffplus-project.eu/en/open-call/innovation-studies/",
+    "funding": 300000
+  },
+  {
+    "id": "roip-2024-vc",
+    "type": "vc",
+    "title": "ROMANIA INVESTMENT PARTNERS | Venture Capital",
+    "region": [
+      "Romania",
+      "EU"
+    ],
+    "eligible_caen_codes": [],
+    "deadlines": [
+      {
+        "label": "Open call 2024",
+        "date": "2024-01-01"
+      },
+      {
+        "label": "Open call close",
+        "date": "2024-12-31"
+      }
+    ],
+    "eligibility_criteria": [
+      "Romanian legal entities (SRL or SA)",
+      "Privately owned (Romanian or foreign capital accepted)",
+      "Company incorporated in Romania (but activity may take place abroad)",
+      "Any CAEN/industry legal in Romania is eligible; no exclusions",
+      "Company must meet at least ONE: 2M€ operational revenue (last 2-3 years), 0.5M€ EBITDA, or 3M€ assets",
+      "Minimum financing requested: 3M€"
+    ],
+    "number_of_docs": 2,
+    "source_url": "https://romaniainvestmentpartners.com/venture-capital",
+    "funding": "unspecified"
+  },
+  {
+    "id": "eic_accelerator",
+    "type": "accelerator",
+    "title": "EIC Accelerator",
+    "region": [
+      "European Union"
+    ],
+    "eligible_caen_codes": [],
+    "deadlines": [
+      {
+        "label": "Short proposals (rolling)",
+        "date": "continuous"
+      },
+      {
+        "label": "Full proposal cut-off",
+        "date": "2026-01-07"
+      },
+      {
+        "label": "Full proposal cut-off",
+        "date": "2026-03-04"
+      },
+      {
+        "label": "Full proposal cut-off",
+        "date": "2026-05-06"
+      },
+      {
+        "label": "Full proposal cut-off",
+        "date": "2026-07-08"
+      },
+      {
+        "label": "Full proposal cut-off",
+        "date": "2026-09-02"
+      },
+      {
+        "label": "Full proposal cut-off",
+        "date": "2026-11-04"
+      }
+    ],
+    "eligibility_criteria": [
+      "Startup, SME or individual willing to launch an SME",
+      "Companies with up to 499 employees (mid-cap for investment only)",
+      "Based in EU Member State or Horizon Europe-associated country",
+      "Innovation at TRL 6-8 (technology demonstration to system complete)",
+      "Ambition to scale-up, high-risk for private investment",
+      "Applicants from third countries may relocate to an eligible country prior to full application",
+      "Applicants from the UK can apply for 'grant only'",
+      "Female CEOs particularly encouraged"
+    ],
+    "number_of_docs": 6,
+    "source_url": "https://eic.ec.europa.eu/eic-funding-opportunities/eic-accelerator_en",
+    "funding": "unspecified"
   }
 ]
