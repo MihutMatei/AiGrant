@@ -1,4 +1,12 @@
-from flask import Flask, request, session, redirect, url_for, render_template, send_from_directory
+from flask import (
+    Flask,
+    request,
+    session,
+    redirect,
+    url_for,
+    render_template,
+    send_from_directory,
+)
 import sys
 import requests
 import feedparser
@@ -710,6 +718,28 @@ def grant_documents(grant_id):
     if not grant:
         return "Grant not found", 404
 
+    try:
+        project_root = os.path.join(BASE_DIR, "..")
+        # Run rag.documentation_rag as a module
+        subprocess.Popen(
+            [
+                sys.executable,
+                "-m",
+                "rag.documentation_rag",
+                str(cui),
+                str(grant_id),
+            ],
+            cwd=project_root,  # IMPORTANT: ensures the package `rag` is importable
+        )
+
+        print(
+            f"[generate_document] Started rag.documentation_rag "
+            f"for CUI={cui}, grant={grant_id}"
+        )
+
+    except Exception as e:
+        return f"Error launching generation module: {e}", 500
+
     # 🟦 AICI construim lista de documente din folderul ../data/generated/<cui>
     documents = []
     if cui:
@@ -747,7 +777,10 @@ def grant_documents(grant_id):
                 }
             )
 
-    return render_template("generate_documents.html", grant=grant, user=user, documents=documents)
+    return render_template(
+        "generate_documents.html", grant=grant, user=user, documents=documents
+    )
+
 
 @app.route("/generated/<cui>/<path:filename>")
 def download_generated(cui, filename):
@@ -758,41 +791,6 @@ def download_generated(cui, filename):
         return "File not found", 404
 
     return send_from_directory(gen_dir, filename, as_attachment=True)
-    
-
-@app.route("/generate/<grant_id>/<document_name>")
-def generate_document(grant_id, document_name):
-    user = get_current_user()
-    if not user:
-        return redirect(url_for("login"))
-
-    cui = user.get("cui")
-    if not cui:
-        return "No CUI found in user profile", 400
-
-    try:
-        project_root = os.path.join(BASE_DIR, "..")
-        # Run rag.documentation_rag as a module
-        subprocess.Popen(
-            [
-                sys.executable,
-                "-m",
-                "rag.documentation_rag",
-                str(cui),
-                str(grant_id),
-            ],
-            cwd=project_root,  # IMPORTANT: ensures the package `rag` is importable
-        )
-
-        print(
-            f"[generate_document] Started rag.documentation_rag "
-            f"for CUI={cui}, grant={grant_id}"
-        )
-
-    except Exception as e:
-        return f"Error launching generation module: {e}", 500
-
-    return render_template("generate_documents.html", grant=grant, user=user)
 
 
 if __name__ == "__main__":
