@@ -43,7 +43,7 @@ def main():
     # Also save to file for debugging / frontend
     firm_dir = OUTPUT_DIR / cif
     firm_dir.mkdir(parents=True, exist_ok=True)
-    out_path = firm_dir / f"match_opportunities_top_{top_k}.json"
+    out_path = firm_dir / f"match_opportunities.json"
     with out_path.open("w", encoding="utf-8") as f:
         json.dump(recs, f, ensure_ascii=False, indent=2)
 

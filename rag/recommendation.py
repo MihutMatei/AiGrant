@@ -152,6 +152,10 @@ def recommend_opportunities_for_firm(
                 "title": opp.get("title") or opp.get("name"),
                 "semantic_score": semantic_score,
                 "eligibility": meta.get("eligible"),
+                "deadlines": meta.get("deadlines"),
+                "funding": meta.get("funding"),
+                "eligibility_criteria": meta.get("eligibility_criteria"),
+                "number_of_docs": meta.get("number_of_docs"),
                 "match_reasons": reasons,
                 "source_url": opp.get("source_url"),
             }
