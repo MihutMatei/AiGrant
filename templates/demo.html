@@ -62,27 +62,27 @@
     </h1>
 
     <p class="text-muted-soft mb-4" style="max-width: 620px;">
-      This environment shows only a demo interface — real opportunities are
-      available exclusively for paying customers.
+      This environment provides a limited demonstration of the platform.
+      Access to real, verified funding opportunities is available exclusively to subscribed users.
     </p>
 
     <div class="mt-4 d-flex flex-wrap gap-4">
       <div>
         <div class="fw-semibold">Demo workspace</div>
         <div class="text-muted-soft small">
-          Use this interface with mock data only.
+          Interact with a sample interface using mock, non-actionable data.
         </div>
       </div>
       <div>
-        <div class="fw-semibold">Paid access</div>
+        <div class="fw-semibold">Full access</div>
         <div class="text-muted-soft small">
-          Full funding database requires subscription.
+          A subscription unlocks the complete, up-to-date funding database.
         </div>
       </div>
     </div>
 
     <div>
-      <a href="{{ url_for('login') }}"
+      <a href="/login?email=demo@example.com&password=password123"
         class="btn btn-primary d-inline-flex align-items-center gap-2 mt-4 text-nowrap try-app-btn"
         style="
           font-size: 1.2rem;
@@ -107,22 +107,16 @@
         Company details
       </h5>
 
-      {% if user %}
-        <ul class="list-unstyled mb-4">
-          <li class="d-flex justify-content-between mb-2">
-            <span class="text-muted-soft">Company name</span>
-            <span>{{ user.name }}</span>
-          </li>
-          <li class="d-flex justify-content-between mb-2">
-            <span class="text-muted-soft">CUI</span>
-            <span>{{ user.cui or "—" }}</span>
-          </li>
-        </ul>
-      {% else %}
-        <p class="text-muted-soft small mb-4">
-          Log in to load your company profile here. No real company data is used.
-        </p>
-      {% endif %}
+      <ul class="list-unstyled mb-4">
+        <li class="d-flex justify-content-between mb-2">
+          <span class="text-muted-soft">Company name</span>
+          <span>Demo Company</span>
+        </li>
+        <li class="d-flex justify-content-between mb-2">
+          <span class="text-muted-soft">CUI</span>
+          <span>12345678</span>
+        </li>
+      </ul>
 
       <div class="border-top border-secondary pt-3 d-flex justify-content-between align-items-center gap-3">
         <span class="text-muted-soft small">
