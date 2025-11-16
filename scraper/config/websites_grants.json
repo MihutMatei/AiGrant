@@ -1,7 +1,19 @@
 [
     {
-        "name" : "eic",
+        "name" : "ec",
         "domain" : "",
-        "start_url" : "https://eic.ec.europa.eu/eic-funding-opportunities/eic-accelerator_en#how-to-apply-for-the-eic-accelerator"
+        "start_url" : "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/11502?isExactMatch=true&status=31094501,31094502,31094503&order=DESC&pageNumber=1&pageSize=50&sortBy=startDate"
+    },
+    {
+
+        "name" : "ec",
+        "domain" : "",
+        "start_url" : "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/12201?isExactMatch=true&status=31094501,31094502,31094503&order=DESC&pageNumber=1&pageSize=50&sortBy=startDate"
+    },
+    {
+
+        "name" : "ec",
+        "domain" : "",
+        "start_url" : "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/competitive-calls-cs/12224?isExactMatch=true&status=31094501,31094502,31094503&order=DESC&pageNumber=1&pageSize=50&sortBy=startDate"
     }
 ]

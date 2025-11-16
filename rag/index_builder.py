@@ -28,12 +28,18 @@ def load_all_opportunities() -> list[dict]:
     """
     all_ops: list[dict] = []
 
-    for filename in ["grants.json", "vcs.json", "accelerators.json"]:
-        file_path = DATA_DIR / filename
-        if not file_path.exists():
-            continue
-        items = _load_json(file_path)
-        # make sure each has a type (grant, vc, accelerator)
+    combined_path = DATA_DIR / "sources.json"
+    data = _load_json(combined_path)
+
+    # expected structure:
+    # {
+    #   "grants": [...],
+    #   "vcs": [...],
+    #   "accelerators": [...]
+    # }
+
+    for key in ["grants", "vcs", "accelerators"]:
+        items = data.get(key, [])
         for item in items:
             all_ops.append(item)
 
@@ -127,7 +133,11 @@ def build_index():
             "title": op.get("title") or op.get("name"),
             "region": op.get("region", []),
             "eligible_caen_codes": op.get("eligible_caen_codes", []),
+            "deadlines": op.get("deadlines", []),
+            "eligibility_criteria": op.get("eligibility_criteria", []),
+            "number_of_docs": len(op.get("required_documents", [])),
             "source_url": op.get("source_url"),
+            "funding": op.get("funding_max", "unspecified")
         })
 
     with INDEX_METADATA_PATH.open("w", encoding="utf-8") as f:

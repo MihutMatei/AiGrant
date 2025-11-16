@@ -24,8 +24,9 @@
     </div>
   {% endif %}
 
-  <form method="post" class="row g-4">
-    <div class="col-md-6">
+  <form method="post" class="row g-3">
+    <!-- Contact name -->
+    <div class="col-12">
       <label class="form-label small text-uppercase text-muted-soft">Contact name</label>
       <input
         type="text"
@@ -35,7 +36,8 @@
       >
     </div>
 
-    <div class="col-md-6">
+    <!-- Email -->
+    <div class="col-12">
       <label class="form-label small text-uppercase text-muted-soft">Email</label>
       <input
         type="email"
@@ -45,8 +47,8 @@
       >
     </div>
 
-    <!-- CUI / Numar angajati / Varsta dezvoltator -->
-    <div class="col-md-4">
+    <!-- CUI -->
+    <div class="col-12">
       <label for="cui" class="form-label small text-uppercase text-muted-soft">CUI</label>
       <input
         type="text"
@@ -58,7 +60,8 @@
       >
     </div>
 
-    <div class="col-md-4">
+    <!-- Number of employees -->
+    <div class="col-12">
       <label for="numar_angajati" class="form-label small text-uppercase text-muted-soft">
         Number of employees
       </label>
@@ -73,7 +76,8 @@
       >
     </div>
 
-    <div class="col-md-4">
+    <!-- Founder age -->
+    <div class="col-12">
       <label for="varsta_dezvoltator" class="form-label small text-uppercase text-muted-soft">
         Founder age
       </label>
@@ -87,7 +91,7 @@
       >
     </div>
 
-    <!-- un pic mai mult spațiu înainte de Additional details -->
+    <!-- Additional details section -->
     <div class="col-12 mt-4">
       <h3 class="h6 text-uppercase text-muted-soft mb-2">Additional details</h3>
       <p class="text-muted-soft small mb-0">
@@ -96,7 +100,8 @@
       </p>
     </div>
 
-    <div class="col-md-6">
+    <!-- Additional info 1 -->
+    <div class="col-12">
       <label for="additional_info_1" class="form-label small text-uppercase text-muted-soft">
         Additional info 1
       </label>
@@ -109,7 +114,8 @@
       >
     </div>
 
-    <div class="col-md-6">
+    <!-- Additional info 2 -->
+    <div class="col-12">
       <label for="additional_info_2" class="form-label small text-uppercase text-muted-soft">
         Additional info 2
       </label>
@@ -122,7 +128,8 @@
       >
     </div>
 
-    <div class="col-md-6">
+    <!-- Additional info 3 -->
+    <div class="col-12">
       <label for="additional_info_3" class="form-label small text-uppercase text-muted-soft">
         Additional info 3
       </label>
@@ -135,7 +142,8 @@
       >
     </div>
 
-    <div class="col-md-6">
+    <!-- Additional info 4 -->
+    <div class="col-12">
       <label for="additional_info_4" class="form-label small text-uppercase text-muted-soft">
         Additional info 4
       </label>
@@ -148,46 +156,48 @@
       >
     </div>
 
-    <div class="col-md-6">
+    <!-- Additional info 5 (bigger textarea) -->
+    <div class="col-12">
       <label for="additional_info_5" class="form-label small text-uppercase text-muted-soft">
         Additional info 5
       </label>
-      <input
-        type="text"
+      <textarea
         id="additional_info_5"
         name="additional_info_5"
         class="form-control bg-dark text-light border-secondary"
-        value="{{ user.additional_info_5 if user.additional_info_5 is defined else '' }}"
-      >
+        rows="3"
+      >{{ user.additional_info_5 if user.additional_info_5 is defined else "" }}</textarea>
     </div>
 
-    <div class="col-md-6">
+    <!-- Additional info 6 (bigger textarea) -->
+    <div class="col-12">
       <label for="additional_info_6" class="form-label small text-uppercase text-muted-soft">
         Additional info 6
       </label>
-      <input
-        type="text"
+      <textarea
         id="additional_info_6"
         name="additional_info_6"
         class="form-control bg-dark text-light border-secondary"
-        value="{{ user.additional_info_6 if user.additional_info_6 is defined else '' }}"
-      >
+        rows="3"
+      >{{ user.additional_info_6 if user.additional_info_6 is defined else "" }}</textarea>
     </div>
 
-    <!-- linia cu Save / text / Find grants pe aceeași linie -->
+    <!-- Bottom row: Save / text / Find grants -->
     <div class="col-12 mt-3">
       <hr class="border-secondary mb-3">
       <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
-        <!-- stânga: Save changes -->
+        <!-- Save changes -->
         <button type="submit" name="action" value="save" class="btn btn-primary">
           <i class="bi bi-save me-1"></i>
           Save changes
         </button>
 
+        <!-- Middle text -->
         <div class="text-muted-soft small flex-grow-1 text-center">
           After updating your profile, discover which grants might fit your startup.
         </div>
 
+        <!-- Find grants (also submits form) -->
         <button type="submit" name="action" value="find_grants" class="btn btn-outline-light">
           <i class="bi bi-compass me-1"></i>
           Find grants

@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Demo · aiGrant{% endblock %}
+
+{% block content %}
+<div class="row g-4 align-items-center">
+  <div class="col-lg-7">
+    <div class="mb-3 d-flex gap-2 align-items-center">
+      <span class="badge-soft">
+        <i class="bi bi-lightning-charge-fill me-1"></i>
+        Demo environment
+      </span>
+    </div>
+
+    <h1 class="fw-semibold mb-3" style="letter-spacing: -0.03em;">
+      Try the <span style="color:#a5b4fc;">demo workspace</span>
+    </h1>
+
+    <p class="text-muted-soft mb-4" style="max-width: 520px;">
+      This environment shows only a demo interface — real opportunities are
+      available exclusively for paying customers.
+    </p>
+
+    <div class="d-flex flex-wrap gap-3 align-items-center">
+      {% if not session.get('user') %}
+        <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg d-flex align-items-center gap-2">
+          <i class="bi bi-box-arrow-in-right"></i>
+          <span>Login as demo company</span>
+        </a>
+      {% else %}
+        <a href="{{ url_for('grants') }}" class="btn btn-primary btn-lg d-flex align-items-center gap-2">
+          <i class="bi bi-compass"></i>
+          <span>Find grants</span>
+        </a>
+      {% endif %}
+    </div>
+
+    <div class="mt-4 d-flex flex-wrap gap-4">
+      <div>
+        <div class="fw-semibold">Demo workspace</div>
+        <div class="text-muted-soft small">
+          Use this interface with mock data only.
+        </div>
+      </div>
+      <div>
+        <div class="fw-semibold">Paid access</div>
+        <div class="text-muted-soft small">
+          Full funding database requires subscription.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="glass-card p-4 p-md-5">
+      <h5 class="mb-3 d-flex align-items-center gap-2">
+        <span class="d-inline-flex align-items-center justify-content-center rounded-circle"
+              style="width: 32px; height: 32px; background: var(--primary-soft);">
+          <i class="bi bi-buildings"></i>
+        </span>
+        Demo company snapshot
+      </h5>
+
+      {% if user %}
+        <ul class="list-unstyled mb-4">
+          <li class="d-flex justify-content-between mb-2">
+            <span class="text-muted-soft">Company name</span>
+            <span>{{ user.name }}</span>
+          </li>
+          <li class="d-flex justify-content-between mb-2">
+            <span class="text-muted-soft">CUI</span>
+            <span>{{ user.cui or "—" }}</span>
+          </li>
+        </ul>
+      {% else %}
+        <p class="text-muted-soft small mb-4">
+          Log in to load your company profile here. No real company data is used.
+        </p>
+      {% endif %}
+
+      <div class="border-top border-secondary pt-3 d-flex justify-content-between align-items-center gap-3">
+        <span class="text-muted-soft small">
+          Production access includes real-time feeds.
+        </span>
+        {% if session.get('user') %}
+          <a href="{{ url_for('account') }}" class="btn btn-outline-light btn-sm">
+            Go to account
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
