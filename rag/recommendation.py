@@ -45,19 +45,7 @@ def build_firm_query(firm: Dict[str, Any]) -> str:
     """
     Construiește un query text din info despre firmă pentru semantic search.
     """
-    name = firm.get("denumire") or ""
-    caen_code = str(firm.get("caen_code") or "")
-    caen_descriere = firm.get("caen_descriere") or ""
-    cifra = firm.get("cifra_de_afaceri_neta")
-    profit = firm.get("profit_net")
-    year = firm.get("year")
-
-    return (
-        f"Firmă românească (IMM) numită {name}, "
-        f"cu cod CAEN {caen_code} ({caen_descriere}), "
-        f"cifră de afaceri {cifra} lei și profit net {profit} în {year}. "
-        f"Interesată de granturi, fonduri VC sau acceleratoare relevante pentru acest profil."
-    )
+    return json.dumps(firm, ensure_ascii=False)
 
 
 def explain_match(
