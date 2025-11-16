@@ -133,7 +133,11 @@ def build_index():
             "title": op.get("title") or op.get("name"),
             "region": op.get("region", []),
             "eligible_caen_codes": op.get("eligible_caen_codes", []),
+            "deadlines": op.get("deadlines", []),
+            "eligibility_criteria": op.get("eligibility_criteria", []),
+            "number_of_docs": len(op.get("required_documents", [])),
             "source_url": op.get("source_url"),
+            "funding": op.get("funding_max", "unspecified")
         })
 
     with INDEX_METADATA_PATH.open("w", encoding="utf-8") as f:
