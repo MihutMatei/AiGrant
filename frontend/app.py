@@ -10,9 +10,10 @@ import copy
 app = Flask(__name__, template_folder="../templates/", static_folder="../public/")
 app.secret_key = "replace_this_with_a_secure_random_key"
 
-USERS_FILE = "users.json"
+# fișierul de output pentru formular
+USERS_FILE = "form_output.json"
 
-# Default mock user database (folosit dacă nu există încă users.json)
+# Default mock user database (folosit ca bază, parola NU se scrie în fișier)
 DEFAULT_USERS = {
     "demo@example.com": {
         "password": "password123",
@@ -32,26 +33,48 @@ DEFAULT_USERS = {
 
 
 def load_users():
-    """Încărcăm utilizatorii din users.json sau folosim DEFAULT_USERS dacă nu există / e corupt."""
+    """
+    Încărcăm utilizatorii pornind de la DEFAULT_USERS și,
+    dacă există form_output.json, suprascriem câmpurile (fără parolă)
+    din demo@example.com cu ce e în data.
+    """
+    users = copy.deepcopy(DEFAULT_USERS)
+
     if os.path.exists(USERS_FILE):
         try:
             with open(USERS_FILE, "r", encoding="utf-8") as f:
                 data = json.load(f)
-                if isinstance(data, dict):
-                    return data
+                if isinstance(data, dict) and isinstance(data.get("data"), dict):
+                    saved = data["data"]
+                    demo = users.get("demo@example.com", {})
+                    # actualizăm doar câmpurile existente, fără "password"
+                    for k, v in saved.items():
+                        if k in demo and k != "password":
+                            demo[k] = v
         except (json.JSONDecodeError, OSError):
             pass
-    # fallback: deep copy ca să nu stricăm DEFAULT_USERS
-    return copy.deepcopy(DEFAULT_USERS)
+
+    return users
 
 
 def save_users():
-    """Salvăm USERS în users.json (persistență locală)."""
+    """
+    Salvăm într-un fișier form_output.json doar câmpurile non-sensitive,
+    sub cheia "data" – fără parolă.
+    """
+    # în cazul ăsta avem un singur user: demo@example.com
+    user = USERS.get("demo@example.com", {})
+    safe_data = {
+        k: v for k, v in user.items()
+        if k != "password"
+    }
+    payload = {"data": safe_data}
+
     with open(USERS_FILE, "w", encoding="utf-8") as f:
-        json.dump(USERS, f, ensure_ascii=False, indent=2)
+        json.dump(payload, f, ensure_ascii=False, indent=2)
 
 
-# baza de date în memorie, încărcată din fișier (sau default)
+# baza de date in memorie, încărcată din fișier (sau default)
 USERS = load_users()
 
 GRANTS = [
@@ -216,7 +239,7 @@ def account():
             key = f"additional_info_{i}"
             user[key] = request.form.get(key, "").strip()
 
-        # Salvăm tot USERS în fișier pentru persistență locală
+        # Salvăm tot USERS în fișier pentru persistență locală (fără parolă)
         save_users()
 
         # dacă a apăsat "Find grants", redirecționăm după save
