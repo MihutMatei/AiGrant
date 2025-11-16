@@ -4,7 +4,7 @@ Fetch company details and balances from OpenAPI.ro based on TAX_CODE.
 Outputs a flattened JSON file with combined data.
 
 Usage:
-    python request.py <TAX_CODE>
+    python request.py
 Return:
     1 on success, 0 on failure.
 """
@@ -25,6 +25,13 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s"
 )
+
+
+BASE_DIR = Path(__file__).resolve().parents[1]
+FRONTEND_DIR = BASE_DIR / "frontend"
+FORM_JSON_PATH = FRONTEND_DIR / "form_output.json"
+
+FIRMS_DIR = BASE_DIR / "data" / "firms"
 
 def flatten(prefix: str, obj: Any, out: Dict[str, Any]) -> None:
     """
@@ -65,11 +72,21 @@ def fetch_json(url: str, headers: Dict[str, str]) -> dict:
 
 def main() -> int:
     """Main entry point of the script."""
-    if len(sys.argv) < 2:
-        logging.error("Usage: python request.py <TAX_CODE>; returns 1 if success, 0 if failure.")
+
+    with open(FORM_JSON_PATH, "r", encoding="utf-8") as f:
+        user_json = json.load(f)
+
+    # Your form structure is: { "data": { ...fields... } }
+    user_data = user_json.get("data", {})
+    TAX_CODE = user_data.get("cui")
+
+    if not TAX_CODE:
+        logging.error("ERROR: form_data.json is missing: data.cui")
         return 0
 
-    TAX_CODE = sys.argv[1]
+    TAX_CODE = str(TAX_CODE).strip()
+    logging.info(f"Loaded CUI from form JSON: {TAX_CODE}")
+
     OPENAPI_KEY = os.getenv("API_KEY")
 
     print(OPENAPI_KEY)
@@ -115,11 +132,21 @@ def main() -> int:
         if k in balances_data:
             flattened_data[k] = balances_data[k]
 
+    merged_output = dict(flattened_data)
+
+    # Add user-provided fields (overwrite if same key exists)
+    for k, v in user_data.items():
+        merged_output[k] = v
+
+    # Always include TAX_CODE / CUI
+    merged_output["cui"] = TAX_CODE
+
+    details_filename = FIRMS_DIR / f"{TAX_CODE}.json"
+
     # Step 4: Save to JSON file
-    details_filename = f"{TAX_CODE}_details.json"
     try:
         with open(details_filename, "w", encoding="utf-8") as f:
-            json.dump(flattened_data, f, ensure_ascii=False, indent=4)
+            json.dump(merged_output, f, ensure_ascii=False, indent=4)
         logging.info(f"Data saved to {details_filename}")
     except Exception as e:
         logging.error(f"Failed to save JSON file: {e}")
