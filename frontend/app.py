@@ -786,13 +786,13 @@ def generate_document(grant_id, document_name):
 
         print(
             f"[generate_document] Started rag.documentation_rag "
-            f"for CUI={cui}, grant={grant_id}, doc={document_name}"
+            f"for CUI={cui}, grant={grant_id}"
         )
 
     except Exception as e:
         return f"Error launching generation module: {e}", 500
 
-    return redirect(url_for("grant_documents", grant_id=grant_id))
+    return render_template("generate_documents.html", grant=grant, user=user)
 
 
 if __name__ == "__main__":
