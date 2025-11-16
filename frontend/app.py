@@ -29,7 +29,7 @@ SOURCES_PATH = os.path.join(BASE_DIR, "..", "data", "opportunities", "sources.js
 DEFAULT_USERS = {
     "demo@example.com": {
         "password": "password123",
-        "name": "Demo User",
+        "name": "Demo Company",
         "email": "demo@example.com",
         "cui": "12345678",
         "numar_angajati": 50,
@@ -481,7 +481,18 @@ def demo():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "GET":
-        return render_template("login.html")
+        email = request.args.get("email")
+        password = request.args.get("password")
+
+        # If both were provided, try to auto-login
+        if email and password:
+            user = USERS.get(email)
+            if user and user.get("password") == password:
+                session["user"] = email
+                return redirect(url_for("index"))
+
+        # Otherwise show the login form normally
+        return render_template("login.html", error=None)
 
     email = request.form.get("email")
     password = request.form.get("password")
