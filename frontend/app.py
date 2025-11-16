@@ -7,6 +7,7 @@ import json
 import os
 import copy
 from datetime import datetime
+import subprocess
 
 app = Flask(__name__, template_folder="../templates/", static_folder="../public/")
 app.secret_key = "replace_this_with_a_secure_random_key"
@@ -16,6 +17,7 @@ USERS_FILE = "form_output.json"
 
 # bază pentru path-uri relative
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+REQUEST_SCRIPT = os.path.join(BASE_DIR, "..", "input", "request.py")
 
 # fișierul cu descrierile oficiale ale oportunităților
 SOURCES_PATH = os.path.join(BASE_DIR, "..", "data", "opportunities", "sources.json")
@@ -133,6 +135,22 @@ GRANTS = [
 
 # ------------------- SOURCES & MATCHING HELPERS -------------------
 
+def run_request_script():
+    """
+    Pornește scriptul ../input/request.py într-un proces separat.
+    Scriptul poate folosi form_output.json ca input.
+    """
+    if not os.path.exists(REQUEST_SCRIPT):
+        print(f"request.py not found at {REQUEST_SCRIPT}")
+        return
+
+    try:
+        # rulează cu același interpreter de Python ca aplicația Flask
+        subprocess.Popen([sys.executable, REQUEST_SCRIPT])
+    except Exception as e:
+        print(f"Error starting request.py: {e}")
+
+
 def load_sources():
     """Încarcă ../data/opportunities/sources.json."""
     if not os.path.exists(SOURCES_PATH):
@@ -197,14 +215,19 @@ def find_source_by_id(grant_id: str):
 def load_match_opportunities(cui: str):
     """
     Încărcă ../outputs/<cui>/match_opportunities.json.
-    Returnează listă de dict-uri sau [] dacă nu există/eroare.
+
+    Returnează:
+      - None  -> fișierul NU există (show loading page)
+      - []    -> fișierul există dar nu are rezultate / e gol
+      - [..]  -> listă de match-uri valide
     """
     if not cui:
-        return []
+        return None
 
     path = os.path.join(BASE_DIR, "..", "outputs", str(cui), "match_opportunities.json")
     if not os.path.exists(path):
-        return []
+        # fișierul nu există încă -> vrem pagina de loading
+        return None
 
     try:
         with open(path, "r", encoding="utf-8") as f:
@@ -214,6 +237,7 @@ def load_match_opportunities(cui: str):
         return []
     except Exception as e:
         print(f"Error loading match_opportunities for CUI {cui}: {e}")
+        # considerăm că fișierul e stricat, tratăm ca și cum nu ar avea rezultate
         return []
 
 
@@ -500,13 +524,18 @@ def account():
             key = f"additional_info_{i}"
             user[key] = request.form.get(key, "").strip()
 
+        # salvăm profilul local
         save_users()
+
+        # pornim pipeline-ul care generează match_opportunities.json
+        run_request_script()
 
         if action == "find_grants":
             return redirect(url_for("grants"))
 
         message = "Changes saved successfully!"
         return render_template("account.html", user=user, message=message)
+
 
     return render_template("account.html", user=user)
 
@@ -520,6 +549,11 @@ def grants():
     cui = user.get("cui")
     matches = load_match_opportunities(cui)
 
+    # 1) match_opportunities.json NU există -> pagina de loading
+    if matches is None:
+        return render_template("grants_loading.html", user=user)
+
+    # 2) Avem match-uri reale din JSON -> construim lista normal
     if matches:
         list_grants = build_list_grants_from_matches(matches)
         sorted_grants = sorted(
@@ -531,7 +565,7 @@ def grants():
             ),
         )
     else:
-        # fallback la GRANTS hardcodate dacă nu avem match_opportunities
+        # 3) Fișierul există dar nu are rezultate -> păstrăm fallback-ul de demo
         sorted_grants = sorted(
             GRANTS,
             key=lambda g: (
