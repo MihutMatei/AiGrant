@@ -1,4 +1,4 @@
-from flask import Flask, request, session, redirect, url_for, jsonify, render_template
+from flask import Flask, request, session, redirect, url_for, render_template
 import sys
 import requests
 import feedparser
@@ -6,6 +6,7 @@ import re
 import json
 import os
 import copy
+from datetime import datetime
 
 app = Flask(__name__, template_folder="../templates/", static_folder="../public/")
 app.secret_key = "replace_this_with_a_secure_random_key"
@@ -13,7 +14,16 @@ app.secret_key = "replace_this_with_a_secure_random_key"
 # fișierul de output pentru formular
 USERS_FILE = "form_output.json"
 
-# Default mock user database (folosit ca bază, parola NU se scrie în fișier)
+# bază pentru path-uri relative
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# fișierul cu descrierile oficiale ale oportunităților
+SOURCES_PATH = os.path.join(BASE_DIR, "..", "data", "opportunities", "sources.json")
+
+
+# ------------------- USERS & PERSISTENȚĂ -------------------
+
+# Default mock user database
 DEFAULT_USERS = {
     "demo@example.com": {
         "password": "password123",
@@ -33,13 +43,7 @@ DEFAULT_USERS = {
 
 
 def load_users():
-    """
-    Încărcăm utilizatorii pornind de la DEFAULT_USERS și,
-    dacă există form_output.json, suprascriem câmpurile (fără parolă)
-    din demo@example.com cu ce e în data.
-    """
     users = copy.deepcopy(DEFAULT_USERS)
-
     if os.path.exists(USERS_FILE):
         try:
             with open(USERS_FILE, "r", encoding="utf-8") as f:
@@ -47,36 +51,25 @@ def load_users():
                 if isinstance(data, dict) and isinstance(data.get("data"), dict):
                     saved = data["data"]
                     demo = users.get("demo@example.com", {})
-                    # actualizăm doar câmpurile existente, fără "password"
                     for k, v in saved.items():
                         if k in demo and k != "password":
                             demo[k] = v
         except (json.JSONDecodeError, OSError):
             pass
-
     return users
 
 
 def save_users():
-    """
-    Salvăm într-un fișier form_output.json doar câmpurile non-sensitive,
-    sub cheia "data" – fără parolă.
-    """
-    # în cazul ăsta avem un singur user: demo@example.com
     user = USERS.get("demo@example.com", {})
-    safe_data = {
-        k: v for k, v in user.items()
-        if k != "password"
-    }
+    safe_data = {k: v for k, v in user.items() if k != "password"}
     payload = {"data": safe_data}
-
     with open(USERS_FILE, "w", encoding="utf-8") as f:
         json.dump(payload, f, ensure_ascii=False, indent=2)
 
 
-# baza de date in memorie, încărcată din fișier (sau default)
 USERS = load_users()
 
+# fallback grants hardcodate – doar dacă nu avem JSON-uri
 GRANTS = [
     {
         "id": 1,
@@ -95,7 +88,7 @@ GRANTS = [
             "Financial statement",
             "Project proposal",
         ],
-        "eligibility": False,  # still ineligible because not all requirements met
+        "eligibility": False,
     },
     {
         "id": 2,
@@ -138,111 +131,377 @@ GRANTS = [
 ]
 
 
+# ------------------- SOURCES & MATCHING HELPERS -------------------
+
+def load_sources():
+    """Încarcă ../data/opportunities/sources.json."""
+    if not os.path.exists(SOURCES_PATH):
+        print(f"Warning: sources.json not found at {SOURCES_PATH}")
+        return {}
+    try:
+        with open(SOURCES_PATH, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception as e:
+        print("Error loading sources.json:", e)
+        return {}
+
+
+SOURCES = load_sources()
+
+def parse_date_to_dateobj(raw):
+    """
+    Primește string de dată (ex: '2025-11-07', '2026-01-12T17:00:00+01:00')
+    și întoarce un datetime.date sau None.
+    """
+    if not raw or not isinstance(raw, str):
+        return None
+
+    s = raw.strip()
+    if s.lower() == "continuous":
+        return None
+
+    # Încercăm ISO full (inclusiv cu offset)
+    try:
+        # fromisoformat știe și de 'YYYY-MM-DD' și de 'YYYY-MM-DDTHH:MM:SS+HH:MM'
+        dt = datetime.fromisoformat(s.replace("Z", ""))
+        return dt.date()
+    except ValueError:
+        pass
+
+    # Încercăm doar primele 10 caractere (YYYY-MM-DD)
+    try:
+        dt = datetime.strptime(s[:10], "%Y-%m-%d")
+        return dt.date()
+    except ValueError:
+        return None
+
+
+def format_dmy(date_obj):
+    """Formatăm data în stil european: zi.lună.an (ex: 07.11.2025)."""
+    if not date_obj:
+        return ""
+    return date_obj.strftime("%d.%m.%Y")
+
+
+
+def find_source_by_id(grant_id: str):
+    """Caută grantul după id în `grants`, `vcs`, `accelerators` din sources.json."""
+    data = SOURCES or {}
+    for key in ("grants", "vcs", "accelerators"):
+        for item in data.get(key, []):
+            if str(item.get("id")) == str(grant_id):
+                return item
+    return None
+
+
+def load_match_opportunities(cui: str):
+    """
+    Încărcă ../outputs/<cui>/match_opportunities.json.
+    Returnează listă de dict-uri sau [] dacă nu există/eroare.
+    """
+    if not cui:
+        return []
+
+    path = os.path.join(BASE_DIR, "..", "outputs", str(cui), "match_opportunities.json")
+    if not os.path.exists(path):
+        return []
+
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        if isinstance(data, list):
+            return data
+        return []
+    except Exception as e:
+        print(f"Error loading match_opportunities for CUI {cui}: {e}")
+        return []
+
+
+def build_list_grants_from_matches(matches):
+    """
+    Pentru pagina /grants: mapăm direct din match_opportunities.json:
+
+      - eligibility        ← fieldul m["eligibility"] (bool)
+      - grant name         ← m["title"]
+      - funding value      ← m["funding"] (raw) + sum_eur numeric pentru sortare
+      - key requirements   ← m["eligibility_criteria"]
+      - number_of_docs     ← m["number_of_docs"]
+      - application_period ← cel mai vechi → cel mai nou din m["deadlines"], în format zi.lună.an
+    """
+    grants = []
+    for m in matches:
+        # eligibility direct din JSON
+        eligibility = bool(m.get("eligibility", False))
+
+        # funding: raw + numeric pentru sortare
+        funding_raw = m.get("funding")
+        if isinstance(funding_raw, (int, float)):
+            sum_eur = float(funding_raw)
+        else:
+            sum_eur = 0.0  # pentru sortare; la afișare poți folosi funding_raw direct
+
+        # number of required documents
+        num_docs = m.get("number_of_docs")
+        try:
+            num_docs_int = int(num_docs) if num_docs is not None else 0
+        except (TypeError, ValueError):
+            num_docs_int = 0
+
+        # application period din deadlines: cea mai veche → cea mai nouă
+        deadlines = m.get("deadlines") or []
+        date_objs = []
+        for d in deadlines:
+            dt = parse_date_to_dateobj(d.get("date"))
+            if dt:
+                date_objs.append(dt)
+
+        application_period = ""
+        if date_objs:
+            start = min(date_objs)
+            end = max(date_objs)
+            if start == end:
+                application_period = format_dmy(start)
+            else:
+                application_period = f"{format_dmy(start)} → {format_dmy(end)}"
+
+        requirements = m.get("eligibility_criteria") or []
+
+        grants.append(
+            {
+                "id": m.get("id"),
+                "title": m.get("title"),
+                "description": None,
+                "requirements": requirements,
+                "met_requirements": [],
+                "unmet_requirements": requirements,
+                "sum_eur": sum_eur,
+                "funding_raw": funding_raw,
+                "required_documents": [f"Document {i+1}" for i in range(num_docs_int)],
+                "eligibility": eligibility,
+                "application_period": application_period,
+                "semantic_score": m.get("semantic_score"),
+                "source_url": m.get("source_url"),
+                "type": m.get("type"),
+            }
+        )
+
+    return grants
+
+
+def pick_application_form_link(source: dict):
+    """
+    Ia linkul de application form din diverse câmpuri posibile.
+    Fallback la source_url dacă nu găsim altceva.
+    """
+    if not source:
+        return None
+    return (
+        source.get("application_form_url")
+        or source.get("application_url")
+        or source.get("application_link")
+        or source.get("apply_url")
+        or source.get("funding_call_url")
+        or source.get("source_url")
+    )
+
+
+def build_grant_from_source_and_match(source, match):
+    """
+    Pentru pagina fiecărui grant:
+      - document names          ← source["required_documents"]
+      - reqs                    ← source["eligibility_criteria"] (sau similar)
+      - grant name              ← source["title"] / "name"
+      - grant funding value     ← source["funding_max"] / "funding" / "cash_stipend"
+      - application form link   ← diverse câmpuri application_* / source_url
+      - perioada aplicare       ← cel mai vechi → cel mai nou din source["deadlines"], zi.lună.an
+    """
+    # requirements
+    requirements = (
+        source.get("eligibility_criteria")
+        or source.get("eligibility_criteria_short")
+        or []
+    )
+    if requirements is None:
+        requirements = []
+
+    # document names
+    required_documents = source.get("required_documents") or []
+
+    # funding value
+    sum_eur = 0.0
+    funding_max = source.get("funding_max")
+    funding_field = source.get("funding")
+    cash_stipend = source.get("cash_stipend")
+
+    if isinstance(funding_max, (int, float)):
+        sum_eur = float(funding_max)
+    elif isinstance(funding_field, (int, float)):
+        sum_eur = float(funding_field)
+    elif isinstance(cash_stipend, (int, float)):
+        sum_eur = float(cash_stipend)
+
+    # perioada aplicare din deadlines sau câmpuri text
+    application_period = ""
+    deadlines = source.get("deadlines") or []
+    date_objs = []
+    for d in deadlines:
+        dt = parse_date_to_dateobj(d.get("date"))
+        if dt:
+            date_objs.append(dt)
+
+    if date_objs:
+        start = min(date_objs)
+        end = max(date_objs)
+        if start == end:
+            application_period = format_dmy(start)
+        else:
+            application_period = f"{format_dmy(start)} → {format_dmy(end)}"
+    else:
+        # fallback pe câmpuri text, fără oră
+        raw_period = (
+            source.get("application_period")
+            or source.get("application_period_text")
+            or source.get("deadline")
+            or source.get("call_deadline")
+            or ""
+        )
+        application_period = raw_period
+
+    # eligibility & semantic_score din match_opps
+    semantic_score = None
+    eligibility = False
+    match_reasons = []
+    if match:
+        semantic_score = match.get("semantic_score")
+        match_reasons = match.get("match_reasons") or []
+        eligibility = bool(match.get("eligibility", False))
+
+    if eligibility and requirements:
+        met_requirements = requirements
+        unmet_requirements = []
+    else:
+        met_requirements = []
+        unmet_requirements = requirements
+
+    title = source.get("title") or source.get("name") or "Untitled"
+    description = source.get("summary") or ""
+
+    application_form_url = pick_application_form_link(source)
+
+    return {
+        "id": source.get("id"),
+        "title": title,
+        "description": description,
+        "requirements": requirements,
+        "met_requirements": met_requirements,
+        "unmet_requirements": unmet_requirements,
+        "sum_eur": sum_eur,
+        "required_documents": required_documents,
+        "eligibility": eligibility,
+        "application_period": application_period,
+        "semantic_score": semantic_score,
+        "match_reasons": match_reasons,
+        "application_form_url": application_form_url,
+        "source_url": application_form_url or source.get("source_url"),
+    }
+
+
+# ------------------- Helper user curent -------------------
+
+def get_current_user():
+    """Return the user dict from session email, or None."""
+    email = session.get("user")
+    if email:
+        return USERS.get(email)
+    return None
+
+
+# ------------------- Routes -------------------
+
 @app.route("/")
 def index():
     feed_url = 'https://ec.europa.eu/info/funding-tenders/opportunities/data/referenceData/grantTenders-rss.xml'
     items = []
 
     try:
-        # Use requests with User-Agent
         r = requests.get(feed_url, headers={'User-Agent': 'Mozilla/5.0'})
-        r.raise_for_status()  # Raise error if request failed
-
-        # Parse RSS content
+        r.raise_for_status()
         feed = feedparser.parse(r.content)
-
-        # Safety check
-        if not hasattr(feed, 'entries') or not feed.entries:
-            print("Feed is empty or cannot be parsed")
-        else:
-            for entry in feed.entries[:10]:
-                description_html = entry.get('description', '')
-                deadline_match = re.search(r'<b>Deadline</b>:\s*(.*?)<br/>', description_html)
-                deadline = deadline_match.group(1).strip() if deadline_match else 'No deadline'
-
-                items.append({
-                    'title': entry.get('title', 'No title'),
-                    'link': entry.get('link', '#'),
-                    'pubDate': entry.get('published', ''),
-                    'deadline': deadline
-                })
-
+        for entry in feed.entries[:10]:
+            description_html = entry.get('description', '')
+            deadline_match = re.search(r'<b>Deadline</b>:\s*(.*?)<br/>', description_html)
+            deadline = deadline_match.group(1).strip() if deadline_match else 'No deadline'
+            items.append({
+                'title': entry.get('title', 'No title'),
+                'link': entry.get('link', '#'),
+                'pubDate': entry.get('published', ''),
+                'deadline': deadline
+            })
     except Exception as e:
         print("Error fetching EU grants:", e)
-        items = []  # ensure items is always a list
 
-    # pe home nu afișăm date de firmă dacă nu e logat
-    user = None
+    user = get_current_user()
     return render_template("index.html", user=user, grants=items)
 
 
 @app.route("/demo")
 def demo():
-    user = USERS.get(session["user"]) if "user" in session else None
-    return render_template("demo.html", user=user, grants=GRANTS)
+    user = get_current_user()
+    if not user:
+        # demo folosește GRANTS hardcodate
+        return render_template("demo.html", user=user, grants=GRANTS)
+    else:
+        return redirect(url_for("grants"))
 
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "GET":
-        # Show login page
         return render_template("login.html")
 
-    # POST: handle login
     email = request.form.get("email")
     password = request.form.get("password")
-
     user = USERS.get(email)
 
     if not user or user.get("password") != password:
-        # Invalid login, show error
         return render_template("login.html", error="Invalid email or password")
 
-    # Successful login
     session["user"] = email
+    return redirect(url_for("index"))
+
+
+@app.route("/logout")
+def logout():
+    session.clear()
     return redirect(url_for("index"))
 
 
 @app.route("/account", methods=["GET", "POST"])
 def account():
-    if "user" not in session:
+    user = get_current_user()
+    if not user:
         return redirect(url_for("login"))
 
-    user = USERS.get(session["user"])
-    if not user:
-        # fallback: dacă pentru vreun motiv nu există, îl recreăm din default
-        user = copy.deepcopy(DEFAULT_USERS["demo@example.com"])
-        USERS[session["user"]] = user
-
     if request.method == "POST":
-        action = request.form.get("action")  # ce buton a fost apăsat
-
-        # Update CUI, Numar de angajati si varsta dezvoltator
-        cui = request.form.get("cui", "").strip()
-        numar_angajati = request.form.get("numar_angajati", "0")
-        varsta_dezvoltator = request.form.get("varsta_dezvoltator", "")
-
-        user["cui"] = cui
+        action = request.form.get("action")
+        user["cui"] = request.form.get("cui", "").strip()
 
         try:
-            user["numar_angajati"] = int(numar_angajati)
-        except (TypeError, ValueError):
+            user["numar_angajati"] = int(request.form.get("numar_angajati", "0"))
+        except ValueError:
             user["numar_angajati"] = 0
 
         try:
-            user["varsta_dezvoltator"] = int(varsta_dezvoltator)
-        except (TypeError, ValueError):
+            user["varsta_dezvoltator"] = int(request.form.get("varsta_dezvoltator", "0"))
+        except ValueError:
             user["varsta_dezvoltator"] = None
 
-        # Additional info 1..6
         for i in range(1, 7):
             key = f"additional_info_{i}"
             user[key] = request.form.get(key, "").strip()
 
-        # Salvăm tot USERS în fișier pentru persistență locală (fără parolă)
         save_users()
 
-        # dacă a apăsat "Find grants", redirecționăm după save
         if action == "find_grants":
             return redirect(url_for("grants"))
 
@@ -254,50 +513,92 @@ def account():
 
 @app.route("/grants")
 def grants():
-    if "user" not in session:
+    user = get_current_user()
+    if not user:
         return redirect(url_for("login"))
 
-    user = USERS.get(session["user"])
+    cui = user.get("cui")
+    matches = load_match_opportunities(cui)
 
-    # sortare: 1) eligibil (True) înainte, 2) sum_eur desc, 3) mai puține documente înainte
-    sorted_grants = sorted(
-        GRANTS,
-        key=lambda g: (
-            not g["eligibility"],             # False (eligibil) înainte de True (neeligibil)
-            -g["sum_eur"],                    # sumă mai mare înainte
-            len(g["required_documents"]),     # mai puține documente înainte
-        ),
-    )
+    if matches:
+        list_grants = build_list_grants_from_matches(matches)
+        sorted_grants = sorted(
+            list_grants,
+            key=lambda g: (
+                not g["eligibility"],          # eligibilii sus
+                -g["sum_eur"],                 # apoi sumă mai mare
+                len(g["required_documents"]),  # apoi mai puține documente
+            ),
+        )
+    else:
+        # fallback la GRANTS hardcodate dacă nu avem match_opportunities
+        sorted_grants = sorted(
+            GRANTS,
+            key=lambda g: (
+                not g["eligibility"],
+                -g["sum_eur"],
+                len(g["required_documents"]),
+            ),
+        )
 
     return render_template("grants.html", grants=sorted_grants, user=user)
 
 
-@app.route("/grants/<int:grant_id>")
+@app.route("/grants/<grant_id>")
 def grant_detail(grant_id):
-    grant = next((g for g in GRANTS if g["id"] == grant_id), None)
+    user = get_current_user()
+
+    cui = user.get("cui") if user else None
+    matches = load_match_opportunities(cui) if cui else []
+    match = next((m for m in matches if str(m.get("id")) == str(grant_id)), None)
+
+    source = find_source_by_id(grant_id)
+    grant = None
+
+    if source:
+        grant = build_grant_from_source_and_match(source, match)
+    else:
+        # fallback: dacă id-ul e numeric, căutăm în GRANTS hardcodate
+        try:
+            numeric_id = int(grant_id)
+        except ValueError:
+            numeric_id = None
+        if numeric_id is not None:
+            grant = next((g for g in GRANTS if g["id"] == numeric_id), None)
+
     if not grant:
         return "Grant not found", 404
-    return render_template("grant_detail.html", grant=grant)
+
+    return render_template("grant_detail.html", grant=grant, user=user)
 
 
-@app.route("/grants/<int:grant_id>/documents")
+@app.route("/grants/<grant_id>/documents")
 def grant_documents(grant_id):
-    if "user" not in session:
+    user = get_current_user()
+    if not user:
         return redirect(url_for("login"))
 
-    grant = next((g for g in GRANTS if g["id"] == grant_id), None)
+    cui = user.get("cui")
+    matches = load_match_opportunities(cui) if cui else []
+    match = next((m for m in matches if str(m.get("id")) == str(grant_id)), None)
+
+    source = find_source_by_id(grant_id)
+    grant = None
+
+    if source:
+        grant = build_grant_from_source_and_match(source, match)
+    else:
+        try:
+            numeric_id = int(grant_id)
+        except ValueError:
+            numeric_id = None
+        if numeric_id is not None:
+            grant = next((g for g in GRANTS if g["id"] == numeric_id), None)
+
     if not grant:
         return "Grant not found", 404
 
-    user = USERS.get(session["user"])
-    # aici, pe viitor, vei integra backend-ul de AI care chiar generează documentele
     return render_template("generate_documents.html", grant=grant, user=user)
-
-
-@app.route("/logout")
-def logout():
-    session.clear()
-    return redirect(url_for("index"))
 
 
 if __name__ == "__main__":

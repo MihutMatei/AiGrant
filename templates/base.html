@@ -105,9 +105,11 @@
             </li>
 
             <!-- TRY OUR APP – NOW PLAIN TEXT (no button style) -->
-            <li class="nav-item">
-              <a href="{{ url_for('demo') }}" class="nav-link">Try our app</a>
-            </li>
+             {% if not session.get("user") %}
+               <li class="nav-item">
+                <a href="{{ url_for('demo') }}" class="nav-link">Try our app</a>
+              </li>
+            {% endif %}
 
             {% if session.get("user") %}
               <li class="nav-item">
