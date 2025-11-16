@@ -1,4 +1,4 @@
-from flask import Flask, request, session, redirect, url_for, jsonify, render_template
+from flask import Flask, request, session, redirect, url_for, render_template
 import sys
 import requests
 import feedparser
@@ -13,7 +13,7 @@ app.secret_key = "replace_this_with_a_secure_random_key"
 # fișierul de output pentru formular
 USERS_FILE = "form_output.json"
 
-# Default mock user database (folosit ca bază, parola NU se scrie în fișier)
+# Default mock user database
 DEFAULT_USERS = {
     "demo@example.com": {
         "password": "password123",
@@ -33,13 +33,7 @@ DEFAULT_USERS = {
 
 
 def load_users():
-    """
-    Încărcăm utilizatorii pornind de la DEFAULT_USERS și,
-    dacă există form_output.json, suprascriem câmpurile (fără parolă)
-    din demo@example.com cu ce e în data.
-    """
     users = copy.deepcopy(DEFAULT_USERS)
-
     if os.path.exists(USERS_FILE):
         try:
             with open(USERS_FILE, "r", encoding="utf-8") as f:
@@ -47,34 +41,22 @@ def load_users():
                 if isinstance(data, dict) and isinstance(data.get("data"), dict):
                     saved = data["data"]
                     demo = users.get("demo@example.com", {})
-                    # actualizăm doar câmpurile existente, fără "password"
                     for k, v in saved.items():
                         if k in demo and k != "password":
                             demo[k] = v
         except (json.JSONDecodeError, OSError):
             pass
-
     return users
 
 
 def save_users():
-    """
-    Salvăm într-un fișier form_output.json doar câmpurile non-sensitive,
-    sub cheia "data" – fără parolă.
-    """
-    # în cazul ăsta avem un singur user: demo@example.com
     user = USERS.get("demo@example.com", {})
-    safe_data = {
-        k: v for k, v in user.items()
-        if k != "password"
-    }
+    safe_data = {k: v for k, v in user.items() if k != "password"}
     payload = {"data": safe_data}
-
     with open(USERS_FILE, "w", encoding="utf-8") as f:
         json.dump(payload, f, ensure_ascii=False, indent=2)
 
 
-# baza de date in memorie, încărcată din fișier (sau default)
 USERS = load_users()
 
 GRANTS = [
@@ -95,7 +77,7 @@ GRANTS = [
             "Financial statement",
             "Project proposal",
         ],
-        "eligibility": False,  # still ineligible because not all requirements met
+        "eligibility": False,
     },
     {
         "id": 2,
@@ -138,111 +120,100 @@ GRANTS = [
 ]
 
 
+# ------------------- Helper -------------------
+def get_current_user():
+    """Return the user dict from session email, or None."""
+    email = session.get("user")
+    if email:
+        return USERS.get(email)
+    return None
+
+
+# ------------------- Routes -------------------
 @app.route("/")
 def index():
     feed_url = 'https://ec.europa.eu/info/funding-tenders/opportunities/data/referenceData/grantTenders-rss.xml'
     items = []
 
     try:
-        # Use requests with User-Agent
         r = requests.get(feed_url, headers={'User-Agent': 'Mozilla/5.0'})
-        r.raise_for_status()  # Raise error if request failed
-
-        # Parse RSS content
+        r.raise_for_status()
         feed = feedparser.parse(r.content)
-
-        # Safety check
-        if not hasattr(feed, 'entries') or not feed.entries:
-            print("Feed is empty or cannot be parsed")
-        else:
-            for entry in feed.entries[:10]:
-                description_html = entry.get('description', '')
-                deadline_match = re.search(r'<b>Deadline</b>:\s*(.*?)<br/>', description_html)
-                deadline = deadline_match.group(1).strip() if deadline_match else 'No deadline'
-
-                items.append({
-                    'title': entry.get('title', 'No title'),
-                    'link': entry.get('link', '#'),
-                    'pubDate': entry.get('published', ''),
-                    'deadline': deadline
-                })
-
+        for entry in feed.entries[:10]:
+            description_html = entry.get('description', '')
+            deadline_match = re.search(r'<b>Deadline</b>:\s*(.*?)<br/>', description_html)
+            deadline = deadline_match.group(1).strip() if deadline_match else 'No deadline'
+            items.append({
+                'title': entry.get('title', 'No title'),
+                'link': entry.get('link', '#'),
+                'pubDate': entry.get('published', ''),
+                'deadline': deadline
+            })
     except Exception as e:
         print("Error fetching EU grants:", e)
-        items = []  # ensure items is always a list
 
-    # pe home nu afișăm date de firmă dacă nu e logat
-    user = None
+    user = get_current_user()
     return render_template("index.html", user=user, grants=items)
 
 
 @app.route("/demo")
 def demo():
-    user = USERS.get(session["user"]) if "user" in session else None
-    return render_template("demo.html", user=user, grants=GRANTS)
+    user = get_current_user()
+    if not user:
+        return render_template("demo.html", user=user, grants=GRANTS)
+    else:
+        return redirect(url_for("grants"))
 
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "GET":
-        # Show login page
         return render_template("login.html")
 
-    # POST: handle login
     email = request.form.get("email")
     password = request.form.get("password")
-
     user = USERS.get(email)
 
     if not user or user.get("password") != password:
-        # Invalid login, show error
         return render_template("login.html", error="Invalid email or password")
 
-    # Successful login
+    # Store only email in session
     session["user"] = email
+    return redirect(url_for("index"))
+
+
+@app.route("/logout")
+def logout():
+    session.clear()
     return redirect(url_for("index"))
 
 
 @app.route("/account", methods=["GET", "POST"])
 def account():
-    if "user" not in session:
+    user = get_current_user()
+    if not user:
         return redirect(url_for("login"))
 
-    user = USERS.get(session["user"])
-    if not user:
-        # fallback: dacă pentru vreun motiv nu există, îl recreăm din default
-        user = copy.deepcopy(DEFAULT_USERS["demo@example.com"])
-        USERS[session["user"]] = user
-
     if request.method == "POST":
-        action = request.form.get("action")  # ce buton a fost apăsat
-
-        # Update CUI, Numar de angajati si varsta dezvoltator
-        cui = request.form.get("cui", "").strip()
-        numar_angajati = request.form.get("numar_angajati", "0")
-        varsta_dezvoltator = request.form.get("varsta_dezvoltator", "")
-
-        user["cui"] = cui
+        action = request.form.get("action")
+        user["cui"] = request.form.get("cui", "").strip()
 
         try:
-            user["numar_angajati"] = int(numar_angajati)
-        except (TypeError, ValueError):
+            user["numar_angajati"] = int(request.form.get("numar_angajati", "0"))
+        except ValueError:
             user["numar_angajati"] = 0
 
         try:
-            user["varsta_dezvoltator"] = int(varsta_dezvoltator)
-        except (TypeError, ValueError):
+            user["varsta_dezvoltator"] = int(request.form.get("varsta_dezvoltator", "0"))
+        except ValueError:
             user["varsta_dezvoltator"] = None
 
-        # Additional info 1..6
         for i in range(1, 7):
             key = f"additional_info_{i}"
             user[key] = request.form.get(key, "").strip()
 
-        # Salvăm tot USERS în fișier pentru persistență locală (fără parolă)
         save_users()
 
-        # dacă a apăsat "Find grants", redirecționăm după save
         if action == "find_grants":
             return redirect(url_for("grants"))
 
@@ -254,21 +225,18 @@ def account():
 
 @app.route("/grants")
 def grants():
-    if "user" not in session:
+    user = get_current_user()
+    if not user:
         return redirect(url_for("login"))
 
-    user = USERS.get(session["user"])
-
-    # sortare: 1) eligibil (True) înainte, 2) sum_eur desc, 3) mai puține documente înainte
     sorted_grants = sorted(
         GRANTS,
         key=lambda g: (
-            not g["eligibility"],             # False (eligibil) înainte de True (neeligibil)
-            -g["sum_eur"],                    # sumă mai mare înainte
-            len(g["required_documents"]),     # mai puține documente înainte
+            not g["eligibility"],
+            -g["sum_eur"],
+            len(g["required_documents"]),
         ),
     )
-
     return render_template("grants.html", grants=sorted_grants, user=user)
 
 
@@ -277,27 +245,21 @@ def grant_detail(grant_id):
     grant = next((g for g in GRANTS if g["id"] == grant_id), None)
     if not grant:
         return "Grant not found", 404
-    return render_template("grant_detail.html", grant=grant)
+    user = get_current_user()
+    return render_template("grant_detail.html", grant=grant, user=user)
 
 
 @app.route("/grants/<int:grant_id>/documents")
 def grant_documents(grant_id):
-    if "user" not in session:
+    user = get_current_user()
+    if not user:
         return redirect(url_for("login"))
 
     grant = next((g for g in GRANTS if g["id"] == grant_id), None)
     if not grant:
         return "Grant not found", 404
 
-    user = USERS.get(session["user"])
-    # aici, pe viitor, vei integra backend-ul de AI care chiar generează documentele
     return render_template("generate_documents.html", grant=grant, user=user)
-
-
-@app.route("/logout")
-def logout():
-    session.clear()
-    return redirect(url_for("index"))
 
 
 if __name__ == "__main__":
