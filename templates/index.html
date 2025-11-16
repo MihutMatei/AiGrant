@@ -178,37 +178,82 @@
     </div>
 
     <!-- TRY OUR APP BUTTON -->
-    <a href="{{ url_for('demo') }}"
-      class="btn btn-primary d-inline-flex align-items-center gap-2 mt-4 text-nowrap try-app-btn"
-      style="
-        font-size: 1.2rem;
-        padding: 1.0rem 3.5rem !important;
-        width: fit-content !important;
-        display: inline-flex !important;
-        transition: all 0.25s ease;
-      ">
-      <i class="bi bi-box-arrow-right"></i>
-      <span>Try our app</span>
-    </a>
+
+    {% if not user %}
+      <a href="{{ url_for('demo') }}"
+        class="btn btn-primary d-inline-flex align-items-center gap-2 mt-4 text-nowrap try-app-btn"
+        style="
+          font-size: 1.2rem;
+          padding: 1.0rem 3.5rem !important;
+          width: fit-content !important;
+          display: inline-flex !important;
+          transition: all 0.25s ease;
+        ">
+        <i class="bi bi-box-arrow-right"></i>
+        <span>Try our app</span>
+      </a>
+    {% endif %}
 
   </div> <!-- END LEFT COLUMN -->
 
-  <!-- RIGHT COLUMN: Pushed to the far right -->
+{# --------------------------------------------------- #}
+{#  RIGHT COLUMN – switches automatically               #}
+{# --------------------------------------------------- #}
+
+{% if user %}
+  {# ---------- LOGGED-IN USER: Company snapshot ---------- #}
+  <div class="col-lg-5">
+    <div class="glass-card p-4 p-md-5">
+      <h5 class="mb-3 d-flex align-items-center gap-2">
+        <span class="d-inline-flex align-items-center justify-content-center rounded-circle"
+              style="width: 32px; height: 32px; background: var(--primary-soft);">
+          <i class="bi bi-buildings"></i>
+        </span>
+        Company details
+      </h5>
+
+      <ul class="list-unstyled mb-4">
+        <li class="d-flex justify-content-between mb-2">
+          <span class="text-muted-soft">Company name</span>
+          <span>{{ user.name }}</span>
+        </li>
+        <li class="d-flex justify-content-between mb-2">
+          <span class="text-muted-soft">CUI</span>
+          <span>{{ user.cui or "—" }}</span>
+        </li>
+      </ul>
+
+      <div class="border-top border-secondary pt-3 d-flex justify-content-between align-items-center gap-3">
+        <span class="text-muted-soft small">
+          Production access includes real-time feeds.
+        </span>
+        <a href="{{ url_for('account') }}" class="btn btn-outline-light btn-sm">
+          Go to account
+        </a>
+      </div>
+    </div>
+  </div>
+
+{% else %}
+  {# ---------- ANONYMOUS USER: Public opportunities ---------- #}
   <div class="col-lg-5 ms-lg-auto d-flex flex-column">
     <h5 class="fw-semibold mb-3 text-white">Latest opportunities</h5>
+
     <div class="eu-grants-widget">
       {% if grants %}
         {% for grant in grants %}
-          <div class="eu-grant-item">
+          <div class="eu-grant-item mb-3">
             <div class="fw-semibold">{{ grant.title }}</div>
-            <div class="small">Published: {{ grant.pubDate }}</div>
+            <div class="small text-muted-soft">Published: {{ grant.pubDate }}</div>
           </div>
         {% endfor %}
       {% else %}
         <div class="text-center text-red py-4">No grants available.</div>
       {% endif %}
     </div>
-  </div> <!-- END RIGHT COLUMN -->
+  </div>
+{% endif %}
+
 
 </div> <!-- END ROW -->
 {% endblock %}
