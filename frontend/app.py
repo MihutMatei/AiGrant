@@ -136,6 +136,7 @@ GRANTS = [
 
 # ------------------- SOURCES & MATCHING HELPERS -------------------
 
+
 def run_request_script():
     """
     Pornește scriptul ../input/request.py într-un proces separat.
@@ -150,6 +151,7 @@ def run_request_script():
         subprocess.Popen([sys.executable, REQUEST_SCRIPT])
     except Exception as e:
         print(f"Error starting request.py: {e}")
+
 
 def run_match_opp(cui: str):
     """
@@ -187,13 +189,13 @@ def run_match_opp(cui: str):
             [
                 sys.executable,
                 "-m",
-                "rag.run_match_opp",   # 👈 modulul, cu doi de p
+                "rag.run_match_opp",  # 👈 modulul, cu doi de p
                 "--cif",
                 str(cui),
                 "--top-k",
                 "5",
             ],
-            cwd=project_root,          # rulează din root-ul proiectului
+            cwd=project_root,  # rulează din root-ul proiectului
         )
         print(f"[run_match_opp] Started rag.run_match_opp for CUI={cui}")
     except Exception as e:
@@ -214,6 +216,7 @@ def load_sources():
 
 
 SOURCES = load_sources()
+
 
 def parse_date_to_dateobj(raw):
     """
@@ -248,7 +251,6 @@ def format_dmy(date_obj):
     if not date_obj:
         return ""
     return date_obj.strftime("%d.%m.%Y")
-
 
 
 def find_source_by_id(grant_id: str):
@@ -349,7 +351,9 @@ def build_list_grants_from_matches(matches):
                 "unmet_requirements": requirements,
                 "sum_eur": sum_eur,
                 "funding_raw": funding_raw,
-                "required_documents": [f"Document {i+1}" for i in range(num_docs_int)],
+                "required_documents": [
+                    f"Document {i + 1}" for i in range(num_docs_int)
+                ],
                 "eligibility": eligibility,
                 "application_period": application_period,
                 "semantic_score": m.get("semantic_score"),
@@ -481,6 +485,7 @@ def build_grant_from_source_and_match(source, match):
 
 # ------------------- Helper user curent -------------------
 
+
 def get_current_user():
     """Return the user dict from session email, or None."""
     email = session.get("user")
@@ -491,25 +496,32 @@ def get_current_user():
 
 # ------------------- Routes -------------------
 
+
 @app.route("/")
 def index():
-    feed_url = 'https://ec.europa.eu/info/funding-tenders/opportunities/data/referenceData/grantTenders-rss.xml'
+    feed_url = "https://ec.europa.eu/info/funding-tenders/opportunities/data/referenceData/grantTenders-rss.xml"
     items = []
 
     try:
-        r = requests.get(feed_url, headers={'User-Agent': 'Mozilla/5.0'})
+        r = requests.get(feed_url, headers={"User-Agent": "Mozilla/5.0"})
         r.raise_for_status()
         feed = feedparser.parse(r.content)
         for entry in feed.entries[:10]:
-            description_html = entry.get('description', '')
-            deadline_match = re.search(r'<b>Deadline</b>:\s*(.*?)<br/>', description_html)
-            deadline = deadline_match.group(1).strip() if deadline_match else 'No deadline'
-            items.append({
-                'title': entry.get('title', 'No title'),
-                'link': entry.get('link', '#'),
-                'pubDate': entry.get('published', ''),
-                'deadline': deadline
-            })
+            description_html = entry.get("description", "")
+            deadline_match = re.search(
+                r"<b>Deadline</b>:\s*(.*?)<br/>", description_html
+            )
+            deadline = (
+                deadline_match.group(1).strip() if deadline_match else "No deadline"
+            )
+            items.append(
+                {
+                    "title": entry.get("title", "No title"),
+                    "link": entry.get("link", "#"),
+                    "pubDate": entry.get("published", ""),
+                    "deadline": deadline,
+                }
+            )
     except Exception as e:
         print("Error fetching EU grants:", e)
 
@@ -576,7 +588,9 @@ def account():
             user["numar_angajati"] = 0
 
         try:
-            user["varsta_dezvoltator"] = int(request.form.get("varsta_dezvoltator", "0"))
+            user["varsta_dezvoltator"] = int(
+                request.form.get("varsta_dezvoltator", "0")
+            )
         except ValueError:
             user["varsta_dezvoltator"] = None
 
@@ -697,6 +711,41 @@ def grant_documents(grant_id):
         return "Grant not found", 404
 
     return render_template("generate_documents.html", grant=grant, user=user)
+
+
+@app.route("/generate/<grant_id>/<document_name>")
+def generate_document(grant_id, document_name):
+    user = get_current_user()
+    if not user:
+        return redirect(url_for("login"))
+
+    cui = user.get("cui")
+    if not cui:
+        return "No CUI found in user profile", 400
+
+    try:
+        project_root = os.path.join(BASE_DIR, "..")
+        # Run rag.documentation_rag as a module
+        subprocess.Popen(
+            [
+                sys.executable,
+                "-m",
+                "rag.documentation_rag",
+                str(cui),
+                str(grant_id),
+            ],
+            cwd=project_root,  # IMPORTANT: ensures the package `rag` is importable
+        )
+
+        print(
+            f"[generate_document] Started rag.documentation_rag "
+            f"for CUI={cui}, grant={grant_id}, doc={document_name}"
+        )
+
+    except Exception as e:
+        return f"Error launching generation module: {e}", 500
+
+    return redirect(url_for("grant_documents", grant_id=grant_id))
 
 
 if __name__ == "__main__":
