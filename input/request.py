@@ -16,10 +16,8 @@ import sys
 import logging
 from datetime import datetime
 from typing import Any, Dict
-from pathlib import Path
 from dotenv import load_dotenv
 
-# Load environment variables from .env file
 load_dotenv()
 
 # Configure logging for production
@@ -90,6 +88,8 @@ def main() -> int:
     logging.info(f"Loaded CUI from form JSON: {TAX_CODE}")
 
     OPENAPI_KEY = os.getenv("API_KEY")
+
+    print(OPENAPI_KEY)
 
     BASE_URL = "https://api.openapi.ro/api/companies/{tax_code}/"
     BASE_URL_COMPLETE = "https://api.openapi.ro/api/companies/{tax_code}/balances/{year}"
