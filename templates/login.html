@@ -3,12 +3,24 @@
 {% block title %}Login · aiGrant{% endblock %}
 
 {% block content %}
+
+<style>
+  .form-control::placeholder {
+    color: white !important;
+    opacity: 0.6;
+  }
+  .form-control::-webkit-input-placeholder { color: white; opacity: 0.6; }
+  .form-control:-moz-placeholder { color: white; opacity: 0.6; }
+  .form-control::-moz-placeholder { color: white; opacity: 0.6; }
+  .form-control:-ms-input-placeholder { color: white; opacity: 0.6; }
+</style>
+
 <div class="row justify-content-center">
   <div class="col-md-6 col-lg-5">
     <div class="glass-card p-4 p-md-5">
       <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
-          <h2 class="h4 fw-semibold mb-1">Welcome back</h2>
+          <h2 class="h4 fw-semibold mb-1">Login</h2>
           <p class="text-muted-soft small mb-0">
             Log in with the demo account to explore.
           </p>
@@ -28,30 +40,28 @@
 
       <form method="post" novalidate>
         <div class="mb-3">
-          <label for="email" class="form-label small text-uppercase text-muted-soft">Email</label>
-          <input
-            type="email"
-            class="form-control form-control-lg bg-dark text-light border-secondary"
-            id="email"
-            name="email"
-            placeholder="demo@example.com"
-            required
-            value="demo@example.com"
-          >
-        </div>
+        <label for="email" class="form-label small text-uppercase text-muted-soft">Email</label>
+        <input
+          type="email"
+          class="form-control form-control-lg bg-dark text-light border-secondary"
+          id="email"
+          name="email"
+          placeholder="Enter your email"
+          required
+        >
+      </div>
 
-        <div class="mb-3">
-          <label for="password" class="form-label small text-uppercase text-muted-soft">Password</label>
-          <input
-            type="password"
-            class="form-control form-control-lg bg-dark text-light border-secondary"
-            id="password"
-            name="password"
-            placeholder="password123"
-            required
-            value="password123"
-          >
-        </div>
+      <div class="mb-3">
+        <label for="password" class="form-label small text-uppercase text-muted-soft">Password</label>
+        <input
+          type="password"
+          class="form-control form-control-lg bg-dark text-light border-secondary"
+          id="password"
+          name="password"
+          placeholder="Enter your password"
+          required
+        >
+      </div>
 
         <button type="submit" class="btn btn-primary w-100 py-2 mt-2">
           <i class="bi bi-box-arrow-in-right me-1"></i>
@@ -59,9 +69,6 @@
         </button>
       </form>
 
-      <p class="text-muted-soft small mt-3 mb-0">
-        Hint: this is a prototype — credentials are pre-filled for faster testing.
-      </p>
     </div>
   </div>
 </div>
