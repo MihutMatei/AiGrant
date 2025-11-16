@@ -41,10 +41,6 @@ def load_all_opportunities() -> list[dict]:
 
 
 def build_canonical_text_for_embedding(op: dict) -> str:
-    """
-    Turn an opportunity into a single text string to embed.
-    You can tune this later.
-    """
     title = op.get("title") or op.get("name") or ""
     summary = op.get("summary") or ""
     raw_text = op.get("raw_text") or ""
@@ -52,15 +48,61 @@ def build_canonical_text_for_embedding(op: dict) -> str:
     caen_codes = ", ".join(op.get("eligible_caen_codes", []))
     op_type = op.get("type", "")
 
+    eligibility_criteria = op.get("eligibility_criteria", [])
+    required_docs = op.get("required_documents_full") or op.get("required_documents", [])
+    scoring_criteria = op.get("scoring_criteria", [])
+
+    # Normalize required_docs to strings
+    if required_docs and isinstance(required_docs[0], dict):
+        required_docs_list = [d.get("name", d.get("id", str(d))) for d in required_docs]
+    else:
+        required_docs_list = required_docs
+
+    # Boolean flags → verbal info so the model can match them
+    team_req = op.get("team_information_required")
+    fin_req = op.get("financials_required")
+    traction_req = op.get("traction_required")
+    budget_template_required = op.get("budget_template_required")
+
+    flags_text = []
+    if team_req is not None:
+        flags_text.append(
+            "Informații despre echipă sunt obligatorii."
+            if team_req else
+            "Nu sunt obligatorii informații detaliate despre echipă."
+        )
+    if fin_req is not None:
+        flags_text.append(
+            "Situațiile financiare sunt obligatorii."
+            if fin_req else
+            "Nu sunt obligatorii situațiile financiare."
+        )
+    if traction_req is not None:
+        flags_text.append(
+            "Se cere traction (dovezi de utilizare / clienți / venituri)."
+            if traction_req else
+            "Nu este obligatorie traction semnificativă."
+        )
+    if budget_template_required:
+        flags_text.append("Este necesar un buget completat într-un șablon specific.")
+
+    eligibility_text = "\n".join(f"- {c}" for c in eligibility_criteria)
+    required_docs_text = "\n".join(f"- {d}" for d in required_docs_list)
+    scoring_text = "\n".join(f"- {s}" for s in scoring_criteria)
+    flags_text_block = "\n".join(f"- {f}" for f in flags_text)
+
     return (
         f"Type: {op_type}\n"
         f"Title: {title}\n"
         f"Region: {region}\n"
         f"Eligible CAEN: {caen_codes}\n\n"
         f"Summary:\n{summary}\n\n"
+        f"Eligibility criteria:\n{eligibility_text}\n\n"
+        f"Required documents:\n{required_docs_text}\n\n"
+        f"Application requirements:\n{flags_text_block}\n\n"
+        f"Scoring criteria:\n{scoring_text}\n\n"
         f"Full text:\n{raw_text}"
     )
-
 
 def build_index():
     opportunities = load_all_opportunities()
