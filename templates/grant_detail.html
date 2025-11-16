@@ -11,33 +11,39 @@
 </div>
 
 <div class="glass-card grant-detail-card p-4 p-md-5">
-  <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
-    <div>
-      <h1 class="h4 fw-semibold mb-1">{{ grant.title }}</h1>
+  <div class="mb-3">
+    <h1 class="h4 fw-semibold mb-1">{{ grant.title }}</h1>
+    {% if grant.description %}
       <p class="text-muted-soft small mb-0">
         {{ grant.description }}
       </p>
+    {% endif %}
+  </div>
+
+  <div class="d-flex flex-wrap align-items-center gap-3 mb-4">
+    <div>
+      {% if grant.eligibility %}
+        <span class="badge rounded-pill text-bg-success">
+          <i class="bi bi-check-circle me-1"></i> You look eligible
+        </span>
+      {% else %}
+        <span class="badge rounded-pill text-bg-danger">
+          <i class="bi bi-x-circle me-1"></i> Not fully eligible
+        </span>
+      {% endif %}
     </div>
 
-    <div class="text-end">
-      <div class="mb-2">
-        {% if grant.eligibility %}
-          <span class="badge rounded-pill text-bg-success">
-            <i class="bi bi-check-circle me-1"></i> You look eligible
-          </span>
-        {% else %}
-          <span class="badge rounded-pill text-bg-danger">
-            <i class="bi bi-x-circle me-1"></i> Not fully eligible
-          </span>
-        {% endif %}
-      </div>
-      <div class="fw-semibold">
-        €{{ "{:,.0f}".format(grant.sum_eur) }}
-      </div>
+    {% if grant.sum_eur %}
       <div class="text-muted-soft small">
-        Maximum grant amount
+        Up to €{{ "{:,.0f}".format(grant.sum_eur) }}
       </div>
-    </div>
+    {% endif %}
+
+    {% if grant.application_period %}
+      <div class="text-muted-soft small">
+        Application: {{ grant.application_period }}
+      </div>
+    {% endif %}
   </div>
 
   <div class="row g-4 mt-2">
@@ -62,7 +68,10 @@
     </div>
 
     <div class="col-md-6">
-      <h2 class="h6 text-uppercase text-muted-soft mb-2">Required documents</h2>
+      <h2 class="h6 text-uppercase text-muted-soft mb-2">
+        <i class="bi bi-file-earmark-text me-1"></i>
+        Required documents
+      </h2>
       {% if grant.required_documents %}
         <ul class="list-unstyled small mb-3">
           {% for doc in grant.required_documents %}
@@ -78,14 +87,15 @@
 
       <div class="d-flex flex-wrap gap-2">
         <a href="{{ url_for('grant_documents', grant_id=grant.id) }}"
-            class="btn btn-primary btn-sm d-flex align-items-center gap-1">
-            <i class="bi bi-magic"></i>
-            <span>Generate application documents</span>
+           class="btn btn-primary btn-sm d-flex align-items-center gap-1">
+          <i class="bi bi-magic"></i>
+          <span>Generate application documents</span>
         </a>
-        <a href="#"
-            class="btn btn-outline-light btn-sm d-flex align-items-center gap-1">
-            <i class="bi bi-box-arrow-up-right"></i>
-            <span>Open application form</span>
+        <a href="{{ grant.application_form_url or grant.source_url or '#' }}"
+           class="btn btn-outline-light btn-sm d-flex align-items-center gap-1"
+           target="_blank" rel="noopener">
+          <i class="bi bi-box-arrow-up-right"></i>
+          <span>Open application form</span>
         </a>
       </div>
       <p class="text-muted-soft small mt-2 mb-0">
