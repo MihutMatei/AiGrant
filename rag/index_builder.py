@@ -49,6 +49,7 @@ def load_all_opportunities() -> list[dict]:
 def build_canonical_text_for_embedding(op: dict) -> str:
     return json.dumps(op, ensure_ascii=False)
 
+
 def build_index():
     opportunities = load_all_opportunities()
     if not opportunities:
@@ -66,18 +67,20 @@ def build_index():
     # Save metadata aligned with embeddings rows
     metadata = []
     for op in opportunities:
-        metadata.append({
-            "id": op["id"],
-            "type": op.get("type", "unknown"),
-            "title": op.get("title") or op.get("name"),
-            "region": op.get("region", []),
-            "eligible_caen_codes": op.get("eligible_caen_codes", []),
-            "deadlines": op.get("deadlines", []),
-            "eligibility_criteria": op.get("eligibility_criteria", []),
-            "number_of_docs": len(op.get("required_documents", [])),
-            "source_url": op.get("source_url"),
-            "funding": op.get("funding_max", "unspecified")
-        })
+        metadata.append(
+            {
+                "id": op["id"],
+                "type": op.get("type", "unknown"),
+                "title": op.get("title") or op.get("name"),
+                "region": op.get("region", []),
+                "eligible_caen_codes": op.get("eligible_caen_codes", []),
+                "deadlines": op.get("deadlines", []),
+                "eligibility_criteria": op.get("eligibility_criteria", []),
+                "number_of_docs": len(op.get("required_documents", [])),
+                "source_url": op.get("source_url"),
+                "funding": op.get("funding_max", "unspecified"),
+            }
+        )
 
     with INDEX_METADATA_PATH.open("w", encoding="utf-8") as f:
         json.dump(metadata, f, ensure_ascii=False, indent=2)
