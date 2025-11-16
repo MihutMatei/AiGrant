@@ -16,6 +16,9 @@ import sys
 import logging
 from datetime import datetime
 from typing import Any, Dict
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Configure logging for production
 logging.basicConfig(
@@ -68,6 +71,8 @@ def main() -> int:
 
     TAX_CODE = sys.argv[1]
     OPENAPI_KEY = os.getenv("API_KEY")
+
+    print(OPENAPI_KEY)
 
     BASE_URL = "https://api.openapi.ro/api/companies/{tax_code}/"
     BASE_URL_COMPLETE = "https://api.openapi.ro/api/companies/{tax_code}/balances/{year}"

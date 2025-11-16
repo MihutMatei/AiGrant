@@ -1,15 +1,74 @@
 [
   {
-    "id": "grant_ro_mock_1",
+    "id": "code4europe-2025",
     "type": "grant",
-    "title": "Grant IMM pentru Consultanță și Digitalizare",
+    "title": "Small Grants - Coding Projects for the Nordic Region (Code4Europe Grant)",
     "region": [
-      "Romania"
+      "Nordic Region",
+      "Europe"
     ],
     "eligible_caen_codes": [
-      "7022",
-      "6201"
+      "6201",
+      "6202",
+      "6209",
+      "8559"
     ],
-    "source_url": "https://mock.gov.ro/grant-digitalizare"
+    "source_url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/home"
+  },
+  {
+    "id": "code4europe-101158834",
+    "type": "grant",
+    "title": "Code4Europe - empowering the new generation of Young Digital Europeans",
+    "region": [
+      "EU"
+    ],
+    "eligible_caen_codes": [
+      "6201",
+      "6202",
+      "6203",
+      "6209",
+      "6311",
+      "6312",
+      "8559"
+    ],
+    "source_url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/topic-details/digital-2023-skills-04-boostingdigit"
+  },
+  {
+    "id": "ffplus-ai-innovation-2025",
+    "type": "grant",
+    "title": "Second call for innovation studies for the development of generative AI models",
+    "region": [
+      "EU"
+    ],
+    "eligible_caen_codes": [
+      "6201",
+      "6202",
+      "6209",
+      "5829",
+      "6311",
+      "6312"
+    ],
+    "source_url": "https://www.ffplus-project.eu/en/open-call/innovation-studies/"
+  },
+  {
+    "id": "roip-2024-vc",
+    "type": "vc",
+    "title": "ROMANIA INVESTMENT PARTNERS | Venture Capital",
+    "region": [
+      "Romania",
+      "EU"
+    ],
+    "eligible_caen_codes": [],
+    "source_url": "https://romaniainvestmentpartners.com/venture-capital"
+  },
+  {
+    "id": "eic_accelerator",
+    "type": "accelerator",
+    "title": "EIC Accelerator",
+    "region": [
+      "European Union"
+    ],
+    "eligible_caen_codes": [],
+    "source_url": "https://eic.ec.europa.eu/eic-funding-opportunities/eic-accelerator_en"
   }
 ]
