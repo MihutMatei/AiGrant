@@ -110,8 +110,15 @@ def generate_presentation(json_file: str, pdf_file: str, logo_path: str = None, 
     # ----------------------------
     # Styles
     # ----------------------------
-    section_title_style = ParagraphStyle('SectionTitle', fontName='DejaVu-Bold', fontSize=22,
-                                         textColor=colors.HexColor("#1a3c6e"), spaceBefore=20, spaceAfter=24)
+    section_title_style = ParagraphStyle(
+        'SectionTitle',
+        fontName='DejaVu-Bold',
+        fontSize=22,
+        leading=28,  # slightly larger than fontSize to give breathing room
+        textColor=colors.HexColor("#1a3c6e"),
+        spaceBefore=20,
+        spaceAfter=24
+    )
     body_style = ParagraphStyle('Body', fontName='DejaVu', fontSize=12, leading=22,
                                 spaceAfter=14, alignment=4)
     detail_style = ParagraphStyle('Detail', fontName='DejaVu', fontSize=11, leading=14,
