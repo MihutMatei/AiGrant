@@ -3,6 +3,51 @@
 {% block title %}Grants · aiGrant{% endblock %}
 
 {% block content %}
+
+<style>
+  .try-app-btn {
+    position: relative;
+    overflow: hidden;
+    border: none;
+    background: linear-gradient(135deg, #5e56f0, #4338ca);
+    box-shadow: 0 4px 15px rgba(67, 56, 202, 0.3);
+    text-decoration: none !important;   /* ← ADD THIS */
+  }
+
+  /* Hover: lift + glow + icon move */
+  .try-app-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(67, 56, 202, 0.4);
+    background: linear-gradient(135deg, #6c63ff, #4c46c4);
+    text-decoration: none !important;   /* ← ADD THIS TOO */
+  }
+
+  .try-app-btn:hover i {
+    transform: translateX(4px);
+  }
+
+  /* Optional: subtle shine animation */
+  .try-app-btn::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.2), transparent);
+    transition: 0.7s;
+  }
+
+  .try-app-btn:hover::before {
+    left: 100%;
+  }
+
+  /* Bullet-proof: remove underline from any child (span, etc.) */
+  .try-app-btn span,
+  .try-app-btn:hover span {
+    text-decoration: none !important;
+  }
+</style>
+
 <div class="d-flex justify-content-between flex-wrap align-items-center mb-4 gap-3">
   <div>
     <h2 class="h4 fw-semibold mb-1">Available grants</h2>
@@ -41,7 +86,7 @@
             <div class="text-end">
               <span class="badge-soft d-inline-block">
                 {% if grant.sum_eur %}
-                  €{{ "{:,.0f}".format(grant.sum_eur) }}
+                  <b>{{ "{:,.0f}".format(grant.sum_eur) }}€</b>
                 {% else %}
                   {{ grant.funding_raw }}
                 {% endif %}
@@ -84,11 +129,19 @@
         </div>
 
         <div class="mt-auto pt-2 d-flex justify-content-between align-items-center">
-          <div class="text-muted-soft small">
+          <div class="text-muted-soft small d-flex align-items-center" style="line-height: 1.2;">
             {{ grant.required_documents | length }} required documents
           </div>
           <a href="{{ url_for('grant_detail', grant_id=grant.id) }}"
-             class="btn btn-sm btn-primary d-flex align-items-center gap-1">
+            class="btn btn-primary d-inline-flex align-items-center gap-2 text-nowrap try-app-btn"
+            style="
+              font-size: 0.9rem;
+              padding: 0.5rem 1.6rem !important;
+              width: fit-content !important;
+              display: inline-flex !important;
+              transition: all 0.25s ease;
+            ">
+            <i class="bi bi-box-arrow-right"></i>
             <span>View details</span>
             <i class="bi bi-arrow-right-short"></i>
           </a>
