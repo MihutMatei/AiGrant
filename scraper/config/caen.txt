@@ -1,0 +1,20 @@
+4711 – Comerț cu amănuntul în magazine nespecializate, cu vânzare predominantă de produse alimentare, băuturi și tutun
+4941 – Transporturi rutiere de mărfuri
+4730 – Comerț cu amănuntul al carburanților pentru autovehicule în magazine specializate
+4646 – Comerț cu ridicata al produselor farmaceutice
+4100 – Lucrări de construcții a clădirilor rezidențiale și nerezidențiale
+4639 – Comerț cu ridicata nespecializat de produse alimentare, băuturi și tutun
+2910 – Fabricarea autovehiculelor de transport rutier
+4690 – Comerț cu ridicata nespecializat
+2932 – Fabricarea altor piese și accesorii pentru autovehicule și motoare de autovehicule
+4211 – Lucrări de construcții a drumurilor și autostrăzilor
+4773 – Comerț cu amănuntul al produselor farmaceutice în magazine specializate
+4621 – Comerț cu ridicata al cerealelor, semințelor, furajelor și tutunului neprelucrat
+2931 – Fabricarea de echipamente electrice și electronice pentru autovehicule și motoare de autovehicule
+4120 – Lucrări de construcții a clădirilor rezidențiale și nerezidențiale
+6210 – Activități de realizare a soft-ului la comandă (software orientat client)
+0610 – Extracția petrolului brut
+0111 – Cultivarea cerealelor, plantelor leguminoase și a semințelor oleaginoase
+3515 – Comercializarea energiei electrice
+4781 – Comerț cu amănuntul al produselor alimentare, băuturilor și produselor din tutun, prin standuri și chioșcuri
+4511 – Comerț cu autoturisme și autovehicule ușoare (sub 3,5 tone)
