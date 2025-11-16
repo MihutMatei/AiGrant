@@ -32,6 +32,9 @@
             <li class="nav-item">
               <a href="{{ url_for('index') }}" class="nav-link">Home</a>
             </li>
+            <li class="nav-item">
+              <a href="{{ url_for('demo') }}" class="nav-link">Try our app</a>
+            </li>
 
             {% if session.get("user") %}
               <li class="nav-item">
