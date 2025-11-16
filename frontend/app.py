@@ -18,6 +18,7 @@ USERS_FILE = "form_output.json"
 # bază pentru path-uri relative
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 REQUEST_SCRIPT = os.path.join(BASE_DIR, "..", "input", "request.py")
+MATCH_SCRIPT = os.path.join(BASE_DIR, "..", "rag", "run_match_opp.py")
 
 # fișierul cu descrierile oficiale ale oportunităților
 SOURCES_PATH = os.path.join(BASE_DIR, "..", "data", "opportunities", "sources.json")
@@ -149,6 +150,54 @@ def run_request_script():
         subprocess.Popen([sys.executable, REQUEST_SCRIPT])
     except Exception as e:
         print(f"Error starting request.py: {e}")
+
+def run_match_opp(cui: str):
+    """
+    Rulează modulul rag.run_match_opp cu:
+      python -m rag.run_match_opp --cif <cui> --top-k 5
+
+    Structură așteptată:
+      <project_root>/
+        rag/
+          __init__.py
+          run_match_opp.py
+          recommendation.py
+        frontend/
+          app.py  (acest fișier)
+    """
+    if not cui:
+        return
+
+    # verificăm dacă există fișierul cu firma: ../data/firms/<cui>.json
+    cui_json = os.path.join(BASE_DIR, "..", "data", "firms", f"{cui}.json")
+    if not os.path.exists(cui_json):
+        print(f"[run_match_opp] {cui_json} not found, skipping.")
+        return
+
+    # root-ul proiectului (un nivel mai sus de frontend/)
+    project_root = os.path.join(BASE_DIR, "..")
+
+    rag_folder = os.path.join(project_root, "rag")
+    if not os.path.exists(rag_folder):
+        print(f"[run_match_opp] rag folder not found at {rag_folder}")
+        return
+
+    try:
+        subprocess.Popen(
+            [
+                sys.executable,
+                "-m",
+                "rag.run_match_opp",   # 👈 modulul, cu doi de p
+                "--cif",
+                str(cui),
+                "--top-k",
+                "5",
+            ],
+            cwd=project_root,          # rulează din root-ul proiectului
+        )
+        print(f"[run_match_opp] Started rag.run_match_opp for CUI={cui}")
+    except Exception as e:
+        print(f"[run_match_opp] Error starting rag.run_match_opp: {e}")
 
 
 def load_sources():
@@ -524,19 +573,19 @@ def account():
             key = f"additional_info_{i}"
             user[key] = request.form.get(key, "").strip()
 
-        # salvăm profilul local
+        # salvăm profilul în form_output.json
         save_users()
 
-        # pornim pipeline-ul care generează match_opportunities.json
+        # rulează request.py (pipeline-ul ăla inițial)
         run_request_script()
 
+        # dacă user-ul a apăsat "Find grants", rulăm și matcher-ul RAG
         if action == "find_grants":
+            run_match_opp(user.get("cui"))
             return redirect(url_for("grants"))
 
         message = "Changes saved successfully!"
         return render_template("account.html", user=user, message=message)
-
-
     return render_template("account.html", user=user)
 
 
@@ -547,25 +596,29 @@ def grants():
         return redirect(url_for("login"))
 
     cui = user.get("cui")
+
+    # la fiecare acces la /grants, dacă avem <cui>.json,
+    # pornim scriptul de matching cu RAG
+    run_match_opp(cui)
+
     matches = load_match_opportunities(cui)
 
-    # 1) match_opportunities.json NU există -> pagina de loading
+    # match_opportunities.json nu există încă -> pagina de loading
     if matches is None:
         return render_template("grants_loading.html", user=user)
 
-    # 2) Avem match-uri reale din JSON -> construim lista normal
     if matches:
         list_grants = build_list_grants_from_matches(matches)
         sorted_grants = sorted(
             list_grants,
             key=lambda g: (
-                not g["eligibility"],          # eligibilii sus
-                -g["sum_eur"],                 # apoi sumă mai mare
-                len(g["required_documents"]),  # apoi mai puține documente
+                not g["eligibility"],
+                -g["sum_eur"],
+                len(g["required_documents"]),
             ),
         )
     else:
-        # 3) Fișierul există dar nu are rezultate -> păstrăm fallback-ul de demo
+        # fallback demo
         sorted_grants = sorted(
             GRANTS,
             key=lambda g: (
