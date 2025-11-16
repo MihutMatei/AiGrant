@@ -17,6 +17,10 @@ import logging
 from datetime import datetime
 from typing import Any, Dict
 from pathlib import Path
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Configure logging for production
 logging.basicConfig(
@@ -70,9 +74,6 @@ def fetch_json(url: str, headers: Dict[str, str]) -> dict:
 
 def main() -> int:
     """Main entry point of the script."""
-    if len(sys.argv) < 2:
-        logging.error("Usage: python request.py <TAX_CODE>; returns 1 if success, 0 if failure.")
-        return 0
 
     with open(FORM_JSON_PATH, "r", encoding="utf-8") as f:
         user_json = json.load(f)
