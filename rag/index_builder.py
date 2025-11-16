@@ -28,12 +28,18 @@ def load_all_opportunities() -> list[dict]:
     """
     all_ops: list[dict] = []
 
-    for filename in ["grants.json", "vcs.json", "accelerators.json"]:
-        file_path = DATA_DIR / filename
-        if not file_path.exists():
-            continue
-        items = _load_json(file_path)
-        # make sure each has a type (grant, vc, accelerator)
+    combined_path = DATA_DIR / "sources.json"
+    data = _load_json(combined_path)
+
+    # expected structure:
+    # {
+    #   "grants": [...],
+    #   "vcs": [...],
+    #   "accelerators": [...]
+    # }
+
+    for key in ["grants", "vcs", "accelerators"]:
+        items = data.get(key, [])
         for item in items:
             all_ops.append(item)
 

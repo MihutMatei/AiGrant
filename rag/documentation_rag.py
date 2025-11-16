@@ -1,5 +1,7 @@
 # rag/documentation_rag.py
 from __future__ import annotations
+import sys
+import subprocess
 
 import json
 from pathlib import Path
@@ -25,15 +27,16 @@ def load_firm_by_cif(cif: str) -> Dict[str, Any]:
 
 
 def load_opportunity_by_id(opportunity_id: str) -> Dict[str, Any]:
-    for fname in ["grants.json", "vcs.json", "accelerators.json"]:
+    for fname in ["sources.json"]:
         path = OPP_DIR / fname
         if not path.exists():
             continue
         with path.open("r", encoding="utf-8") as f:
             items = json.load(f)
-        if isinstance(items, dict):
-            items = [items]
-        for op in items:
+        all_opps = []
+        for opp_type in ["grants", "accelerators", "vcs"]:
+            all_opps = all_opps + items.get(opp_type, [])
+        for op in all_opps:
             if op.get("id") == opportunity_id:
                 return op
     raise KeyError(f"Opportunity {opportunity_id} not found")
@@ -116,6 +119,7 @@ Reguli:
 - Cheile JSON trebuie să fie EXACT cele specificate mai jos.
 - Răspunsul trebuie să fie DOAR JSON valid, fără alt text.
 - Foloseste un limbaj cat mai adecvat din punct de vedere legal.
+- Nu folosi diacritice sub nicio forma.
 
 # Formatul cerut
 
@@ -181,7 +185,8 @@ Text oficial / descriere completă:
  - Pentru fiecare document scrie cel putin 600 cuvinte.
  - Respecta EXACT formatul mentionat mai sus.
  - Nu genera altceva decat ce este specificat mai sus.
-- Foloseste un limbaj cat mai adecvat din punct de vedere legal.
+ - Foloseste un limbaj cat mai adecvat din punct de vedere legal.
+ - Nu folosi diacritice sub nicio forma (nici daca inputul contine diacritice - acolo pui un caracter care se potriveste, de exemplu S in loc de Ș).
     """.strip()
 
 
@@ -230,8 +235,62 @@ def generate_docs_package(cif: str, opportunity_id: str) -> Dict[str, Any]:
 
 
 if __name__ == "__main__":
-    example_cif = "33945221"
-    example_opp_id = "grant_ro_mock_1"  # id-ul tău de test
+    if len(sys.argv) != 3:
+        print("Usage: python3 -m documentation_rag [cif] [opportunity_id]")
+
+    example_cif = sys.argv[1]
+    example_opp_id = sys.argv[2]  # id-ul tău de test
 
     package = generate_docs_package(example_cif, example_opp_id)
     print(json.dumps(package, ensure_ascii=False, indent=2))
+
+    # Save each AI-generated document to a file
+    output_dir = BASE_DIR / "data" / "generated" / example_cif
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    for doc in package.get("ai_docs", []):
+        doc_name = doc.get("name", "unknown")
+        # Sanitize filename: remove special chars and use lowercase with underscores
+        safe_name = doc_name.lower().replace(" ", "_").replace("/", "_")
+        
+        # Save JSON
+        output_json = output_dir / f"{safe_name}.json"
+        with output_json.open("w", encoding="utf-8") as f:
+            json.dump(doc, f, ensure_ascii=False, indent=2)
+        print(f"Saved document to: {output_json}")
+        
+        # Generate PDF using gen.py
+        output_pdf = output_dir / f"{safe_name}.pdf"
+        firm_json = FIRMS_DIR / f"{example_cif}.json"
+        pdf_generator = BASE_DIR / "rag" / "pdfGenerator" / "gen.py"
+        
+        try:
+            # Convert doc structure to format expected by gen.py
+            pdf_input = {
+                "company_name": "",  # will be filled from registry
+                "tagline": f"{doc_name}",
+                "sections": doc.get("draft", [])
+            }
+            
+            # Save temporary JSON for PDF generator
+            temp_json = output_dir / f"{safe_name}_temp.json"
+            with temp_json.open("w", encoding="utf-8") as f:
+                json.dump(pdf_input, f, ensure_ascii=False, indent=2)
+            
+            # Call PDF generator
+            result = subprocess.run(
+                [sys.executable, str(pdf_generator), str(temp_json), str(firm_json), str(output_pdf)],
+                capture_output=True,
+                text=True
+            )
+            
+            if result.returncode == 1:
+                print(f"Generated PDF: {output_pdf}")
+            else:
+                print(f"Failed to generate PDF for {doc_name}: {result.stderr}")
+            
+            # Clean up temp file
+            temp_json.unlink(missing_ok=True)
+            
+        except Exception as e:
+            print(f"Error generating PDF for {doc_name}: {e}")

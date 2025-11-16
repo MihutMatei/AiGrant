@@ -1,4 +1,5 @@
 # src/embeddings/vector_store.py
+# Codul CAEN real Veridion 7022
 import json
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -54,7 +55,7 @@ class OpportunityVectorStore:
         if filter_caen:
             indices = [
                 i for i in indices
-                if filter_caen in self.metadata[i].get("eligible_caen_codes", [])
+                if filter_caen in self.metadata[i].get("eligible_caen_codes", []) or len(self.metadata[i].get("eligible_caen_codes", [])) == 0
             ]
 
         if not indices:
@@ -78,6 +79,7 @@ class OpportunityVectorStore:
             results.append({
                 **self.metadata[original_idx],
                 "score": float(sims[rank_pos]),
+                "eligible": float(sims[rank_pos]) >= 0.40
             })
 
         return results
