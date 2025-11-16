@@ -130,7 +130,7 @@ Trebuie să generezi un răspuns STRICT în format JSON, cu următoarea structur
     {{
       "name": string,
       "type": string,  // ex: "business_plan", "cofinancing_declaration", "other"
-      "draft": // continutul propriu-zis al documentului, impartit pe sectiuni
+      "sections": // continutul propriu-zis al documentului, impartit pe sectiuni
       [
         {{
             "title": string, // titlul primei sectiuni (ex. "Rezumat executiv", "Descrierea afacerii", "Strategia de marketing", "Plan operational")
@@ -252,45 +252,38 @@ if __name__ == "__main__":
         doc_name = doc.get("name", "unknown")
         # Sanitize filename: remove special chars and use lowercase with underscores
         safe_name = doc_name.lower().replace(" ", "_").replace("/", "_")
-        
+
         # Save JSON
         output_json = output_dir / f"{safe_name}.json"
         with output_json.open("w", encoding="utf-8") as f:
             json.dump(doc, f, ensure_ascii=False, indent=2)
         print(f"Saved document to: {output_json}")
-        
+
         # Generate PDF using gen.py
         output_pdf = output_dir / f"{safe_name}.pdf"
         firm_json = FIRMS_DIR / f"{example_cif}.json"
         pdf_generator = BASE_DIR / "rag" / "pdfGenerator" / "gen.py"
-        
+
         try:
             # Convert doc structure to format expected by gen.py
-            pdf_input = {
-                "company_name": "",  # will be filled from registry
-                "tagline": f"{doc_name}",
-                "sections": doc.get("draft", [])
-            }
-            
-            # Save temporary JSON for PDF generator
-            temp_json = output_dir / f"{safe_name}_temp.json"
-            with temp_json.open("w", encoding="utf-8") as f:
-                json.dump(pdf_input, f, ensure_ascii=False, indent=2)
-            
+
             # Call PDF generator
             result = subprocess.run(
-                [sys.executable, str(pdf_generator), str(temp_json), str(firm_json), str(output_pdf)],
+                [
+                    sys.executable,
+                    str(pdf_generator),
+                    str(output_json),
+                    str(firm_json),
+                    str(output_pdf),
+                ],
                 capture_output=True,
-                text=True
+                text=True,
             )
-            
+
             if result.returncode == 1:
                 print(f"Generated PDF: {output_pdf}")
             else:
                 print(f"Failed to generate PDF for {doc_name}: {result.stderr}")
-            
-            # Clean up temp file
-            temp_json.unlink(missing_ok=True)
-            
+
         except Exception as e:
             print(f"Error generating PDF for {doc_name}: {e}")

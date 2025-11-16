@@ -710,19 +710,6 @@ def grant_documents(grant_id):
     if not grant:
         return "Grant not found", 404
 
-    return render_template("generate_documents.html", grant=grant, user=user)
-
-
-@app.route("/generate/<grant_id>/<document_name>")
-def generate_document(grant_id, document_name):
-    user = get_current_user()
-    if not user:
-        return redirect(url_for("login"))
-
-    cui = user.get("cui")
-    if not cui:
-        return "No CUI found in user profile", 400
-
     try:
         project_root = os.path.join(BASE_DIR, "..")
         # Run rag.documentation_rag as a module
@@ -739,13 +726,13 @@ def generate_document(grant_id, document_name):
 
         print(
             f"[generate_document] Started rag.documentation_rag "
-            f"for CUI={cui}, grant={grant_id}, doc={document_name}"
+            f"for CUI={cui}, grant={grant_id}"
         )
 
     except Exception as e:
         return f"Error launching generation module: {e}", 500
 
-    return redirect(url_for("grant_documents", grant_id=grant_id))
+    return render_template("generate_documents.html", grant=grant, user=user)
 
 
 if __name__ == "__main__":

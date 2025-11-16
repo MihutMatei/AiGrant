@@ -123,7 +123,7 @@ def recommend_opportunities_for_firm(
                 "type": opp.get("type"),
                 "title": opp.get("title") or opp.get("name"),
                 "semantic_score": score,
-                "eligible": score >= 0.5,
+                "eligibility": score >= 0.5,
                 "region": opp.get("region", []),
                 "eligible_caen_codes": opp.get("eligible_caen_codes", []),
                 "deadlines": opp.get("deadlines", []),
